@@ -6,758 +6,792 @@
 <title>🌱 Sustainable Data Center — RL Environment</title>
 <style>
 :root {
-  --bg:       #030a06;
-  --surface:  #071510;
-  --surface2: #0c1f14;
-  --border:   #0f3a1a;
-  --green:    #00ff88;
-  --green2:   #00cc66;
-  --blue:     #00aaff;
-  --orange:   #ffaa00;
-  --red:      #ff4455;
-  --text:     #d0e8d8;
-  --muted:    #3a5a42;
+  --bg:      #030a06;
+  --s1:      #071510;
+  --s2:      #0c1f14;
+  --border:  #0f3a1a;
+  --green:   #00ff88;
+  --green2:  #00cc66;
+  --blue:    #00aaff;
+  --orange:  #ffaa00;
+  --red:     #ff4455;
+  --purple:  #aa44ff;
+  --text:    #d0e8d8;
+  --muted:   #3a5a42;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;}
 
-/* ── HEADER ── */
-.header {
-  background: linear-gradient(135deg, #030a06, #071a0c);
-  border-bottom: 1px solid #00ff8822;
-  padding: 0 40px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 50;
-  backdrop-filter: blur(10px);
-}
-.header-left { display:flex; align-items:center; gap:14px; }
-.header-icon { font-size:1.8rem; }
-.header-title { font-size:1.1rem; font-weight:700; color:var(--green); letter-spacing:0.5px; }
-.header-sub { font-size:0.72rem; color:var(--muted); margin-top:1px; }
-.header-right { display:flex; align-items:center; gap:12px; }
-.status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
-.version { background:#00ff8815; border:1px solid #00ff8830; color:var(--green); padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:600; }
+/* PARTICLES BG */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.particle{position:absolute;width:2px;height:2px;background:var(--green);border-radius:50%;opacity:0;animation:float linear infinite;}
+@keyframes float{0%{transform:translateY(100vh) translateX(0);opacity:0;}10%{opacity:0.4;}90%{opacity:0.1;}100%{transform:translateY(-10vh) translateX(40px);opacity:0;}}
 
-/* ── LAYOUT ── */
-.page { padding:20px 32px; max-width:1600px; margin:auto; display:flex; flex-direction:column; gap:16px; }
-.row { display:grid; gap:16px; }
-.row-3 { grid-template-columns:1fr 1fr 1fr; }
-.row-2 { grid-template-columns:1fr 1fr; }
-.row-4 { grid-template-columns:repeat(4,1fr); }
+/* HEADER */
+.header{background:linear-gradient(135deg,#030a06ee,#071a0cee);border-bottom:1px solid #00ff8822;padding:0 32px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;backdrop-filter:blur(20px);}
+.h-left{display:flex;align-items:center;gap:12px;}
+.h-icon{font-size:1.6rem;filter:drop-shadow(0 0 8px var(--green));}
+.h-title{font-size:1rem;font-weight:700;color:var(--green);letter-spacing:0.5px;}
+.h-sub{font-size:0.68rem;color:var(--muted);margin-top:1px;}
+.h-right{display:flex;align-items:center;gap:16px;}
+.live-badge{display:flex;align-items:center;gap:6px;background:#00ff8812;border:1px solid #00ff8830;padding:5px 12px;border-radius:20px;font-size:0.72rem;color:var(--green);font-weight:600;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:blink 2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.2}}
+.score-badge{background:#00aaff12;border:1px solid #00aaff30;padding:5px 12px;border-radius:20px;font-size:0.72rem;color:var(--blue);font-weight:600;}
 
-/* ── CARD ── */
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 20px;
-  position: relative;
-  overflow: hidden;
-}
-.card::before {
-  content:'';
-  position:absolute;
-  top:0; left:0; right:0;
-  height:2px;
-  background:linear-gradient(90deg,transparent,var(--green),transparent);
-  opacity:0.4;
-}
-.card-title {
-  font-size:0.7rem;
-  color:var(--muted);
-  text-transform:uppercase;
-  letter-spacing:2px;
-  margin-bottom:16px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-}
+/* LAYOUT */
+.page{padding:16px 24px;max-width:1700px;margin:auto;position:relative;z-index:1;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.span2{grid-column:span 2;}
+.mb{margin-bottom:14px;}
 
-/* ── CONTROL PANEL ── */
-.controls-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
-.ctrl-group label { display:block; font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
-.ctrl-group select {
-  width:100%; background:var(--surface2); border:1px solid var(--border);
-  color:var(--text); padding:9px 12px; border-radius:8px; font-size:0.83rem;
-  cursor:pointer; outline:none; transition:border 0.2s;
-}
-.ctrl-group select:focus { border-color:var(--green); }
-.ctrl-group .slider-wrap { display:flex; align-items:center; gap:8px; }
-.ctrl-group input[type=range] {
-  flex:1; -webkit-appearance:none; height:4px; border-radius:2px;
-  background:linear-gradient(90deg,var(--green) var(--pct,60%),var(--border) var(--pct,60%));
-  outline:none; cursor:pointer;
-}
-.ctrl-group input[type=range]::-webkit-slider-thumb {
-  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
-  background:var(--green); box-shadow:0 0 6px var(--green);
-}
-.slider-val { color:var(--green); font-size:0.85rem; font-weight:700; min-width:16px; }
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:18px;position:relative;overflow:hidden;transition:border-color 0.3s;}
+.card::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0.3;}
+.card:hover{border-color:#00ff8820;}
+.ct{font-size:0.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
 
-.btn-row { display:flex; gap:10px; flex-wrap:wrap; }
-.btn {
-  padding:10px 22px; border:none; border-radius:9px; font-size:0.85rem;
-  font-weight:600; cursor:pointer; transition:all 0.18s; letter-spacing:0.3px;
-  display:flex; align-items:center; gap:6px;
-}
-.btn:hover { transform:translateY(-1px); filter:brightness(1.15); }
-.btn:active { transform:translateY(0); }
-.btn-start  { background:linear-gradient(135deg,var(--green),var(--green2)); color:#000; }
-.btn-auto   { background:linear-gradient(135deg,#0088ff,#0055cc); color:#fff; }
-.btn-stop   { background:linear-gradient(135deg,var(--red),#cc0022); color:#fff; }
-.btn-step   { background:var(--surface2); border:1px solid var(--border); color:var(--green); }
-.btn-step:hover { border-color:var(--green); }
+/* CONTROLS */
+.cg4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.cg label{display:block;font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;}
+.cg select{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:8px 11px;border-radius:8px;font-size:0.82rem;cursor:pointer;outline:none;transition:border 0.2s;}
+.cg select:focus{border-color:var(--green);}
+.slider-row{display:flex;align-items:center;gap:8px;}
+.slider-row input[type=range]{flex:1;-webkit-appearance:none;height:3px;border-radius:2px;outline:none;cursor:pointer;background:linear-gradient(90deg,var(--green) var(--p,60%),var(--border) var(--p,60%));}
+.slider-row input::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);}
+.sv{color:var(--green);font-size:0.85rem;font-weight:700;min-width:14px;text-align:right;}
 
-/* ── RACK GRID ── */
-.rack-section { grid-column:1/-1; }
-.rack-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.pills { display:flex; gap:8px; flex-wrap:wrap; }
-.pill { padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:600; border:1px solid; }
-.pill-g { background:#00ff8812; border-color:#00ff8840; color:var(--green); }
-.pill-b { background:#00aaff12; border-color:#00aaff40; color:var(--blue); }
-.pill-o { background:#ffaa0012; border-color:#ffaa0040; color:var(--orange); }
-.pill-r { background:#ff445512; border-color:#ff445540; color:var(--red); }
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn{padding:9px 20px;border:none;border-radius:9px;font-size:0.82rem;font-weight:600;cursor:pointer;transition:all 0.18s;display:flex;align-items:center;gap:5px;letter-spacing:0.2px;}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.2);}
+.btn:active{transform:none;}
+.b-start{background:linear-gradient(135deg,var(--green),var(--green2));color:#000;}
+.b-auto{background:linear-gradient(135deg,#0099ff,#0055cc);color:#fff;}
+.b-stop{background:linear-gradient(135deg,var(--red),#cc0022);color:#fff;}
+.b-step{background:var(--s2);border:1px solid var(--border);color:var(--green);}
+.b-vs{background:linear-gradient(135deg,var(--purple),#7700cc);color:#fff;}
+.b-step:hover{border-color:var(--green);}
 
-.rack-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:6px; }
-.rack {
-  aspect-ratio:0.7;
-  border-radius:8px;
-  border:1px solid;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  gap:3px;
-  cursor:default;
-  transition:all 0.3s;
-  position:relative;
-  padding:6px 4px;
-}
-.rack-safe   { background:#001a0a; border-color:#00ff8830; }
-.rack-warm   { background:#1a1200; border-color:#ffaa0060; }
-.rack-hot    { background:#1a0500; border-color:#ff880060; animation:pulse-rack 1s infinite alternate; }
-.rack-crit   { background:#1a0000; border-color:#ff445580; animation:pulse-rack 0.5s infinite alternate; }
-.rack-dead   { background:#0a0a0a; border-color:#1a1a1a; opacity:0.4; }
-@keyframes pulse-rack {
-  from { box-shadow:0 0 4px currentColor; }
-  to   { box-shadow:0 0 16px currentColor, inset 0 0 8px currentColor; }
-}
-.rack-id   { font-size:0.55rem; color:var(--muted); }
-.rack-temp { font-size:0.9rem; font-weight:700; }
-.rack-util { font-size:0.6rem; }
-.rack-icon { font-size:0.8rem; }
-.temp-safe { color:var(--green); }
-.temp-warm { color:#aaff00; }
-.temp-hot  { color:var(--orange); }
-.temp-crit { color:var(--red); }
+/* RACK GRID */
+.rack-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:5px;}
+.rack{border-radius:8px;border:1px solid;padding:8px 4px;text-align:center;cursor:default;transition:all 0.3s;position:relative;}
+.rack:hover{transform:scale(1.05);z-index:2;}
+.rs{background:#001a0a;border-color:#00ff8828;}
+.rw{background:#151000;border-color:#ffaa0050;}
+.rh{background:#180800;border-color:#ff880055;animation:ph 1s infinite alternate;}
+.rc{background:#180000;border-color:#ff445570;animation:ph 0.5s infinite alternate;}
+.rd{background:#0a0a0a;border-color:#111;opacity:0.35;}
+@keyframes ph{from{box-shadow:0 0 3px currentColor;}to{box-shadow:0 0 14px currentColor,inset 0 0 6px currentColor;}}
+.ri{font-size:0.52rem;color:var(--muted);}
+.rt{font-size:0.88rem;font-weight:700;margin:1px 0;}
+.ru{font-size:0.58rem;}
+.ric{font-size:0.75rem;}
+.ts{color:var(--green);}
+.tw{color:#aaff00;}
+.th{color:var(--orange);}
+.tc{color:var(--red);}
 
-.alert-banner {
-  display:none;
-  background:linear-gradient(135deg,#1a000088,#0a000088);
-  border:1px solid var(--red);
-  border-radius:10px;
-  padding:10px 16px;
-  color:var(--red);
-  font-size:0.85rem;
-  font-weight:600;
-  margin-bottom:12px;
-  animation:pulse-rack 0.8s infinite alternate;
-}
+/* POWER */
+.pg{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:10px;}
+.pc{background:var(--s2);border:2px solid var(--border);border-radius:10px;padding:10px;text-align:center;cursor:pointer;transition:all 0.2s;}
+.pc:hover{border-color:var(--green);transform:scale(1.02);}
+.pc.act{border-color:var(--green);background:#00ff8808;box-shadow:0 0 18px #00ff8818;}
+.pi{font-size:1.4rem;}
+.pn{font-size:0.67rem;color:var(--muted);margin-top:2px;}
+.pv{font-size:0.8rem;font-weight:700;margin-top:1px;}
+.pg-{color:var(--green);}.po-{color:var(--orange);}.pr-{color:var(--red);}
 
-/* ── POWER SOURCES ── */
-.power-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
-.power-card {
-  background:var(--surface2); border:2px solid var(--border);
-  border-radius:10px; padding:12px; text-align:center;
-  cursor:pointer; transition:all 0.2s;
-}
-.power-card:hover { border-color:var(--green); transform:scale(1.02); }
-.power-card.active {
-  border-color:var(--green); background:#00ff8808;
-  box-shadow:0 0 20px #00ff8820;
-}
-.power-icon { font-size:1.6rem; margin-bottom:4px; }
-.power-name { font-size:0.7rem; color:var(--muted); }
-.power-avail { font-size:0.8rem; font-weight:700; margin-top:2px; }
-.avail-good { color:var(--green); }
-.avail-mid  { color:var(--orange); }
-.avail-bad  { color:var(--red); }
+/* CARBON BAR */
+.cbar-wrap{margin-top:8px;}
+.cbar-track{background:var(--s2);border-radius:5px;height:8px;overflow:hidden;}
+.cbar-fill{height:100%;border-radius:5px;transition:width 1s;background:linear-gradient(90deg,var(--green),var(--orange),var(--red));}
+.cbar-lbls{display:flex;justify-content:space-between;font-size:0.62rem;color:var(--muted);margin-top:3px;}
 
-/* ── CARBON METER ── */
-.carbon-meter { margin-top:4px; }
-.carbon-track { background:var(--surface2); border-radius:6px; height:10px; overflow:hidden; position:relative; }
-.carbon-fill {
-  height:100%; border-radius:6px; transition:width 1s;
-  background:linear-gradient(90deg,var(--green),var(--orange),var(--red));
-}
-.carbon-labels { display:flex; justify-content:space-between; font-size:0.65rem; color:var(--muted); margin-top:4px; }
+/* METRICS */
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.m{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:11px;text-align:center;transition:border 0.3s;}
+.m:hover{border-color:#00ff8820;}
+.mv{font-size:1.4rem;font-weight:700;line-height:1;}
+.ml{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+.vg{color:var(--green);}.vw{color:var(--orange);}.vb{color:var(--red);}.vbl{color:var(--blue);}.vp{color:var(--purple);}
 
-/* ── METRICS ── */
-.metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.metric {
-  background:var(--surface2); border:1px solid var(--border);
-  border-radius:10px; padding:12px; text-align:center;
-}
-.metric-val { font-size:1.5rem; font-weight:700; line-height:1; }
-.metric-lbl { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
-.val-good { color:var(--green); }
-.val-warn { color:var(--orange); }
-.val-bad  { color:var(--red); }
-.val-blue { color:var(--blue); }
+/* CHART — line graph */
+.line-chart{position:relative;height:90px;margin-top:4px;}
+.line-chart canvas{width:100%!important;height:90px!important;}
 
-/* ── CHART ── */
-.chart-wrap { height:80px; display:flex; align-items:flex-end; gap:2px; overflow:hidden; }
-.cbar { flex:1; border-radius:2px 2px 0 0; min-width:3px; transition:height 0.3s; }
+/* MINI CHART */
+.mini-chart{display:flex;align-items:flex-end;gap:2px;height:60px;overflow:hidden;}
+.mbar{flex:1;border-radius:2px 2px 0 0;min-width:3px;transition:height 0.3s;}
 
-/* ── GRADE ── */
-.grade-wrap { display:flex; align-items:center; gap:16px; }
-.grade-circle {
-  width:72px; height:72px; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  font-size:2rem; font-weight:800; border:3px solid; flex-shrink:0;
-}
-.gA { color:var(--green);  border-color:var(--green);  background:#00ff8810; box-shadow:0 0 20px #00ff8830; }
-.gB { color:var(--blue);   border-color:var(--blue);   background:#00aaff10; }
-.gC { color:var(--orange); border-color:var(--orange); background:#ffaa0010; }
-.gD { color:#ff6600;       border-color:#ff6600;       background:#ff660010; }
-.gF { color:var(--red);    border-color:var(--red);    background:#ff445510; }
-.grade-details { flex:1; }
-.grade-pct { font-size:1.4rem; font-weight:700; }
-.grade-feedback { font-size:0.78rem; color:var(--muted); margin-top:3px; }
-.grade-bar { background:var(--surface2); border-radius:4px; height:5px; margin-top:8px; overflow:hidden; }
-.grade-fill { height:100%; border-radius:4px; transition:width 1.2s; background:linear-gradient(90deg,var(--green),var(--green2)); }
-.grade-stats { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px; }
-.grade-stat { font-size:0.68rem; color:var(--muted); }
-.grade-stat span { color:var(--text); font-weight:600; }
+/* COMPARISON */
+.vs-panel{display:none;}
+.vs-panel.show{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.vs-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:14px;}
+.vs-title{font-size:0.75rem;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.vs-human{color:var(--blue);}
+.vs-ai{color:var(--green);}
+.vs-stat{display:flex;justify-content:space-between;font-size:0.75rem;padding:4px 0;border-bottom:1px solid var(--border);}
+.vs-stat:last-child{border:none;}
 
-/* ── LOG ── */
-.log-wrap {
-  background:#020805; border:1px solid var(--border);
-  border-radius:10px; padding:12px; height:160px;
-  overflow-y:auto; font-family:'Courier New',monospace; font-size:0.73rem;
-}
-.log-wrap::-webkit-scrollbar { width:3px; }
-.log-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
-.lg { padding:1px 0; }
-.lg-pos  { color:var(--green); }
-.lg-neg  { color:var(--red); }
-.lg-warn { color:var(--orange); }
-.lg-sys  { color:var(--blue); }
-.lg-info { color:#6a9a76; }
+/* GRADE */
+.gw{display:flex;align-items:center;gap:14px;}
+.gc{width:66px;height:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.9rem;font-weight:800;border:3px solid;flex-shrink:0;}
+.gA{color:var(--green);border-color:var(--green);background:#00ff8810;box-shadow:0 0 20px #00ff8828;}
+.gB{color:var(--blue);border-color:var(--blue);background:#00aaff10;}
+.gC{color:var(--orange);border-color:var(--orange);background:#ffaa0010;}
+.gD{color:#ff6600;border-color:#ff6600;background:#ff660010;}
+.gF{color:var(--red);border-color:var(--red);background:#ff445510;}
+.gd{flex:1;}
+.gp{font-size:1.3rem;font-weight:700;}
+.gf{font-size:0.76rem;color:var(--muted);margin-top:2px;}
+.gbar{background:var(--s2);border-radius:3px;height:5px;margin-top:7px;overflow:hidden;}
+.gfill{height:100%;border-radius:3px;transition:width 1.2s;background:linear-gradient(90deg,var(--green),var(--green2));}
+.gsg{display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:7px;}
+.gss{font-size:0.65rem;color:var(--muted);}
+.gss span{color:var(--text);font-weight:600;}
 
-/* ── EPISODE OVERLAY ── */
-.overlay {
-  display:none; position:fixed; inset:0;
-  background:#000000dd; z-index:200;
-  align-items:center; justify-content:center;
-  backdrop-filter:blur(4px);
-}
-.overlay-card {
-  background:var(--surface); border:2px solid var(--green);
-  border-radius:20px; padding:40px; text-align:center;
-  max-width:440px; width:90%;
-  box-shadow:0 0 80px #00ff8820;
-  animation:slideUp 0.3s ease;
-}
-@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-.overlay-card h2 { font-size:1.8rem; color:var(--green); margin-bottom:8px; }
-.overlay-card p  { color:var(--muted); margin-bottom:20px; font-size:0.9rem; }
+/* LOG */
+.log{background:#020805;border:1px solid var(--border);border-radius:9px;padding:10px;height:150px;overflow-y:auto;font-family:'Courier New',monospace;font-size:0.7rem;}
+.log::-webkit-scrollbar{width:3px;}
+.log::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.ll{padding:1px 0;}
+.lp{color:var(--green);}.ln{color:var(--red);}.lw{color:var(--orange);}.ls{color:var(--blue);}.li{color:#4a7a52;}
+
+/* ALERT */
+.alert{display:none;background:#1a000088;border:1px solid var(--red);border-radius:9px;padding:9px 14px;color:var(--red);font-size:0.82rem;font-weight:600;margin-bottom:10px;animation:ph 0.8s infinite alternate;}
+
+/* PILLS */
+.pills{display:flex;gap:6px;flex-wrap:wrap;}
+.pill{padding:3px 9px;border-radius:20px;font-size:0.67rem;font-weight:600;border:1px solid;}
+.pg2{background:#00ff8812;border-color:#00ff8838;color:var(--green);}
+.pb2{background:#00aaff12;border-color:#00aaff38;color:var(--blue);}
+.po2{background:#ffaa0012;border-color:#ffaa0038;color:var(--orange);}
+.pr2{background:#ff445512;border-color:#ff445538;color:var(--red);}
+
+/* SOUND INDICATOR */
+.sound-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:5px 10px;border-radius:8px;cursor:pointer;font-size:0.75rem;transition:all 0.2s;}
+.sound-btn:hover{border-color:var(--green);color:var(--green);}
+.sound-btn.on{border-color:var(--green);color:var(--green);}
+
+/* OVERLAY */
+.overlay{display:none;position:fixed;inset:0;background:#000000dd;z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.oc{background:var(--s1);border:2px solid var(--green);border-radius:20px;padding:36px;text-align:center;max-width:460px;width:90%;box-shadow:0 0 80px #00ff8818;animation:su 0.3s ease;}
+@keyframes su{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+.oc h2{font-size:1.7rem;color:var(--green);margin-bottom:8px;}
+.oc p{color:var(--muted);margin-bottom:18px;font-size:0.88rem;}
+
+/* TOOLTIP */
+.rack[data-tip]:hover::before{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:#0c2a14;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:0.65rem;white-space:nowrap;color:var(--text);z-index:10;pointer-events:none;}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<div class="header">
-  <div class="header-left">
-    <div class="header-icon">🌱</div>
-    <div>
-      <div class="header-title">Sustainable Data Center RL Environment</div>
-      <div class="header-sub">AI-Powered Green Computing · Meta × Scaler OpenEnv Hackathon 2026</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <div class="status-dot"></div>
-    <div class="version">v1.0.0 LIVE</div>
+<!-- PARTICLES -->
+<div id="particles"></div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="oc">
+    <h2>🏁 Episode Complete!</h2>
+    <p id="ovMsg"></p>
+    <div id="ovGrade" style="margin-bottom:20px"></div>
+    <button class="btn b-start" onclick="hideOverlay()">▶ Run Again</button>
   </div>
 </div>
 
-<!-- EPISODE END OVERLAY -->
-<div class="overlay" id="overlay">
-  <div class="overlay-card">
-    <h2>🏁 Episode Complete!</h2>
-    <p id="overlayMsg">Your data center has run for 72 steps.</p>
-    <div id="overlayGrade" style="margin-bottom:20px"></div>
-    <button class="btn btn-start" onclick="hideOverlay()">▶ Run Again</button>
+<!-- HEADER -->
+<div class="header">
+  <div class="h-left">
+    <div class="h-icon">🌱</div>
+    <div>
+      <div class="h-title">Sustainable Data Center RL Environment</div>
+      <div class="h-sub">AI-Powered Green Computing · Meta × Scaler OpenEnv Hackathon 2026</div>
+    </div>
+  </div>
+  <div class="h-right">
+    <button class="sound-btn" id="soundBtn" onclick="toggleSound()">🔇 Sound Off</button>
+    <div class="score-badge" id="headerScore">Score: —</div>
+    <div class="live-badge"><div class="live-dot"></div>v1.0.0 LIVE</div>
   </div>
 </div>
 
 <div class="page">
 
-  <!-- ── ROW 1: CONTROLS ── -->
+<!-- ROW 1: CONTROLS -->
+<div class="card mb">
+  <div class="ct">⚙️ Episode Configuration & Controls</div>
+  <div class="cg4">
+    <div class="cg">
+      <label>Difficulty</label>
+      <select id="selDiff">
+        <option value="easy">🟢 Easy</option>
+        <option value="medium" selected>🟡 Medium</option>
+        <option value="hard">🔴 Hard</option>
+      </select>
+    </div>
+    <div class="cg">
+      <label>Cooling Level: <span id="clbl" style="color:var(--green)">3</span></label>
+      <div class="slider-row">
+        <input type="range" id="slC" min="1" max="5" value="3"
+          oninput="clbl.textContent=this.value;sv2.textContent=this.value;updSlider(this)">
+        <span class="sv" id="sv2">3</span>
+      </div>
+    </div>
+    <div class="cg">
+      <label>Workload Mode</label>
+      <select id="selWL">
+        <option value="eco_mode">🌱 Eco Mode</option>
+        <option value="balanced" selected>⚖️ Balanced</option>
+        <option value="high_performance">🚀 High Performance</option>
+      </select>
+    </div>
+    <div class="cg">
+      <label>Defer Non-Critical?</label>
+      <select id="selDef">
+        <option value="false" selected>⚡ No — Process Now</option>
+        <option value="true">⏳ Yes — Defer to Off-Peak</option>
+      </select>
+    </div>
+  </div>
+  <div class="btn-row">
+    <button class="btn b-start" onclick="resetEp()">▶ Start Episode</button>
+    <button class="btn b-auto"  onclick="autoPlay()">🤖 Auto-Play AI</button>
+    <button class="btn b-stop"  onclick="stopAuto()">⏹ Stop</button>
+    <button class="btn b-step"  onclick="manualStep()">👆 Manual Step</button>
+    <button class="btn b-vs"    onclick="toggleVS()">⚔️ Human vs AI</button>
+  </div>
+</div>
+
+<!-- ROW 2: RACKS -->
+<div class="card mb">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div class="ct" style="margin:0">🖥️ Server Rack Status — 12 Racks Live</div>
+    <div class="pills" id="pills"><span class="pill pb2">⏳ Not Started</span></div>
+  </div>
+  <div class="alert" id="alertBanner"></div>
+  <div class="rack-grid" id="rackGrid"></div>
+</div>
+
+<!-- ROW 3: POWER | METRICS | GRADE+LOG -->
+<div class="g3 mb">
+
+  <!-- Power -->
   <div class="card">
-    <div class="card-title">⚙️ Episode Configuration & Controls</div>
-    <div class="controls-grid">
-      <div class="ctrl-group">
-        <label>Difficulty</label>
-        <select id="selDiff">
-          <option value="easy">🟢 Easy</option>
-          <option value="medium" selected>🟡 Medium</option>
-          <option value="hard">🔴 Hard</option>
-        </select>
+    <div class="ct">⚡ Power & Energy</div>
+    <div class="pg">
+      <div class="pc act" id="ps-hybrid" onclick="setPow('hybrid')">
+        <div class="pi">🔋</div><div class="pn">Hybrid</div>
+        <div class="pv po-" id="pv-hybrid">—</div>
       </div>
-      <div class="ctrl-group">
-        <label>Cooling Level: <span id="coolingLbl" style="color:var(--green)">3</span></label>
-        <div class="slider-wrap">
-          <input type="range" id="slCooling" min="1" max="5" value="3"
-            oninput="document.getElementById('coolingLbl').textContent=this.value;updateSlider(this)">
-          <span class="slider-val" id="coolingVal">3</span>
-        </div>
+      <div class="pc" id="ps-solar" onclick="setPow('solar')">
+        <div class="pi">☀️</div><div class="pn">Solar</div>
+        <div class="pv pg-" id="pv-solar">—</div>
       </div>
-      <div class="ctrl-group">
-        <label>Workload Mode</label>
-        <select id="selWorkload">
-          <option value="eco_mode">🌱 Eco Mode (60% load)</option>
-          <option value="balanced" selected>⚖️ Balanced (100% load)</option>
-          <option value="high_performance">🚀 High Performance (140%)</option>
-        </select>
+      <div class="pc" id="ps-wind" onclick="setPow('wind')">
+        <div class="pi">💨</div><div class="pn">Wind</div>
+        <div class="pv pg-" id="pv-wind">—</div>
       </div>
-      <div class="ctrl-group">
-        <label>Defer Non-Critical Tasks?</label>
-        <select id="selDefer">
-          <option value="false" selected>⚡ No — Process Immediately</option>
-          <option value="true">⏳ Yes — Defer to Off-Peak</option>
-        </select>
+      <div class="pc" id="ps-grid" onclick="setPow('grid')">
+        <div class="pi">🏭</div><div class="pn">Grid</div>
+        <div class="pv pr-">High CO₂</div>
       </div>
     </div>
-    <div class="btn-row">
-      <button class="btn btn-start"  onclick="resetEpisode()">▶ Start Episode</button>
-      <button class="btn btn-auto"   onclick="autoPlay()">🤖 Auto-Play AI Agent</button>
-      <button class="btn btn-stop"   onclick="stopAuto()">⏹ Stop</button>
-      <button class="btn btn-step"   onclick="manualStep()">👆 Manual Step</button>
+    <div class="cbar-wrap">
+      <div style="display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted);margin-bottom:3px">
+        <span>🌍 Total Carbon</span>
+        <span id="ckg" style="color:var(--green);font-weight:600">0 kg CO₂</span>
+      </div>
+      <div class="cbar-track"><div class="cbar-fill" id="cFill" style="width:0%"></div></div>
+      <div class="cbar-lbls"><span>0</span><span>175</span><span>350 kg</span></div>
+    </div>
+    <div style="margin-top:10px">
+      <div class="ct" style="margin-bottom:6px">📈 Reward History</div>
+      <div class="mini-chart" id="miniChart"></div>
     </div>
   </div>
 
-  <!-- ── ROW 2: RACKS FULL WIDTH ── -->
-  <div class="card rack-section">
-    <div class="rack-header">
-      <div class="card-title" style="margin-bottom:0">🖥️ Server Rack Status — 12 Racks Live</div>
-      <div class="pills" id="pills">
-        <span class="pill pill-b">⏳ Not Started</span>
-      </div>
+  <!-- Metrics -->
+  <div class="card">
+    <div class="ct">📊 Live Metrics</div>
+    <div class="mg">
+      <div class="m"><div class="mv vg" id="mT">—</div><div class="ml">Avg Temp °C</div></div>
+      <div class="m"><div class="mv vbl" id="mP">—</div><div class="ml">PUE Score</div></div>
+      <div class="m"><div class="mv vg" id="mR">—</div><div class="ml">% Renewable</div></div>
+      <div class="m"><div class="mv vg" id="mTk">0</div><div class="ml">Tasks Done</div></div>
+      <div class="m"><div class="mv vbl" id="mSt">0/72</div><div class="ml">Progress</div></div>
+      <div class="m"><div class="mv vg" id="mRw">0</div><div class="ml">Total Reward</div></div>
+      <div class="m"><div class="mv vg" id="mSL">0</div><div class="ml">SLA Violations</div></div>
+      <div class="m"><div class="mv vg" id="mF">0</div><div class="ml">Failed Racks</div></div>
     </div>
-    <div class="alert-banner" id="alertBanner">⚠️ CRITICAL ALERT</div>
-    <div class="rack-grid" id="rackGrid"></div>
   </div>
 
-  <!-- ── ROW 3: POWER | METRICS | GRADE ── -->
-  <div class="row row-3">
-
-    <!-- Power -->
-    <div class="card">
-      <div class="card-title">⚡ Power Source Selection</div>
-      <div class="power-grid">
-        <div class="power-card" id="psrc-solar" onclick="setPower('solar')">
-          <div class="power-icon">☀️</div>
-          <div class="power-name">Solar</div>
-          <div class="power-avail avail-good" id="pav-solar">—</div>
-        </div>
-        <div class="power-card active" id="psrc-hybrid" onclick="setPower('hybrid')">
-          <div class="power-icon">🔋</div>
-          <div class="power-name">Hybrid</div>
-          <div class="power-avail avail-mid" id="pav-hybrid">—</div>
-        </div>
-        <div class="power-card" id="psrc-wind" onclick="setPower('wind')">
-          <div class="power-icon">💨</div>
-          <div class="power-name">Wind</div>
-          <div class="power-avail avail-good" id="pav-wind">—</div>
-        </div>
-        <div class="power-card" id="psrc-grid" onclick="setPower('grid')">
-          <div class="power-icon">🏭</div>
-          <div class="power-name">Grid</div>
-          <div class="power-avail avail-bad">High CO₂</div>
-        </div>
-      </div>
-      <div class="carbon-meter">
-        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:4px">
-          <span>🌍 Carbon Emissions</span>
-          <span id="carbonKg" style="color:var(--green)">0 kg CO₂</span>
-        </div>
-        <div class="carbon-track">
-          <div class="carbon-fill" id="carbonFill" style="width:0%"></div>
-        </div>
-        <div class="carbon-labels"><span>0</span><span>175</span><span>350 kg</span></div>
-      </div>
-      <div style="margin-top:12px">
-        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px">REWARD HISTORY</div>
-        <div class="chart-wrap" id="chart"></div>
+  <!-- Grade + Log -->
+  <div class="card">
+    <div class="ct">🏆 Performance Grade</div>
+    <div id="gradeBox">
+      <div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:16px 0">
+        Start an episode to see your grade
       </div>
     </div>
-
-    <!-- Metrics -->
-    <div class="card">
-      <div class="card-title">📊 Live Metrics</div>
-      <div class="metric-grid">
-        <div class="metric">
-          <div class="metric-val val-good" id="mTemp">—</div>
-          <div class="metric-lbl">Avg Temp °C</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-blue" id="mPUE">—</div>
-          <div class="metric-lbl">PUE Score</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mRenew">—</div>
-          <div class="metric-lbl">% Renewable</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mTasks">0</div>
-          <div class="metric-lbl">Tasks Done</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mStep">0/72</div>
-          <div class="metric-lbl">Progress</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mReward">0</div>
-          <div class="metric-lbl">Total Reward</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mSLA">0</div>
-          <div class="metric-lbl">SLA Violations</div>
-        </div>
-        <div class="metric">
-          <div class="metric-val val-good" id="mFailed">0</div>
-          <div class="metric-lbl">Failed Racks</div>
-        </div>
-      </div>
+    <div class="ct" style="margin-top:12px;margin-bottom:6px">📋 Event Log</div>
+    <div class="log" id="logBox">
+      <div class="ll ls">[System] Dashboard ready. Start an episode above.</div>
     </div>
-
-    <!-- Grade -->
-    <div class="card">
-      <div class="card-title">🏆 Performance Grade</div>
-      <div id="gradeBox">
-        <div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 0">
-          Start an episode to see your grade
-        </div>
-      </div>
-      <br>
-      <div class="card-title" style="margin-bottom:8px">📋 Event Log</div>
-      <div class="log-wrap" id="log">
-        <div class="lg lg-sys">[System] Dashboard ready. Configure and start an episode.</div>
-      </div>
-    </div>
-
   </div>
 
 </div>
 
+<!-- ROW 4: TEMPERATURE LINE CHART -->
+<div class="card mb">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+    <div class="ct" style="margin:0">🌡️ Temperature Trend — Live (Last 40 Steps)</div>
+    <div style="display:flex;gap:12px;font-size:0.68rem;">
+      <span style="color:var(--green)">● Safe &lt;45°C</span>
+      <span style="color:var(--orange)">● Warning &lt;65°C</span>
+      <span style="color:var(--red)">● Critical &gt;65°C</span>
+    </div>
+  </div>
+  <canvas id="tempChart" height="120"></canvas>
+</div>
+
+<!-- ROW 5: HUMAN VS AI COMPARISON -->
+<div class="vs-panel" id="vsPanel">
+  <div class="vs-card">
+    <div class="vs-title vs-human">👤 Human Agent (You)</div>
+    <div class="vs-stat"><span>Carbon Emitted</span><span id="hC" style="color:var(--orange)">—</span></div>
+    <div class="vs-stat"><span>Tasks Completed</span><span id="hT" style="color:var(--green)">—</span></div>
+    <div class="vs-stat"><span>Failed Racks</span><span id="hF" style="color:var(--red)">—</span></div>
+    <div class="vs-stat"><span>SLA Violations</span><span id="hSL" style="color:var(--red)">—</span></div>
+    <div class="vs-stat"><span>Total Reward</span><span id="hRw" style="color:var(--green)">—</span></div>
+    <div class="vs-stat"><span>Final Grade</span><span id="hGr" style="color:var(--green)">—</span></div>
+  </div>
+  <div class="vs-card">
+    <div class="vs-title vs-ai">🤖 AI Agent</div>
+    <div class="vs-stat"><span>Carbon Emitted</span><span id="aC" style="color:var(--orange)">—</span></div>
+    <div class="vs-stat"><span>Tasks Completed</span><span id="aT" style="color:var(--green)">—</span></div>
+    <div class="vs-stat"><span>Failed Racks</span><span id="aF" style="color:var(--red)">—</span></div>
+    <div class="vs-stat"><span>SLA Violations</span><span id="aSL" style="color:var(--red)">—</span></div>
+    <div class="vs-stat"><span>Total Reward</span><span id="aRw" style="color:var(--green)">—</span></div>
+    <div class="vs-stat"><span>Final Grade</span><span id="aGr" style="color:var(--green)">—</span></div>
+  </div>
+</div>
+
+</div><!-- end page -->
+
 <script>
 const API = 'http://127.0.0.1:8000';
-let totalReward = 0;
-let rewardHistory = [];
-let autoInterval = null;
-let episodeStarted = false;
-let lastObs = null;
-let selectedPower = 'hybrid';
+let totalReward = 0, rewardHist = [], tempHist = [];
+let autoInt = null, started = false, lastObs = null;
+let selPow = 'hybrid', soundOn = false;
+let vsMode = false, humanStats = null, aiStats = null, humanDone = false;
+let AudioCtx = null;
 
-// ── Init ──────────────────────────────────────────────────────
-function updateSlider(el) {
-  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
-  el.style.setProperty('--pct', pct + '%');
-  document.getElementById('coolingVal').textContent = el.value;
+// ── PARTICLES ───────────────────────────────────────────────
+(function spawnParticles() {
+  const c = document.getElementById('particles');
+  for (let i = 0; i < 25; i++) {
+    const d = document.createElement('div');
+    d.className = 'particle';
+    d.style.cssText = `left:${Math.random()*100}%;animation-duration:${8+Math.random()*12}s;animation-delay:${Math.random()*10}s;opacity:0`;
+    c.appendChild(d);
+  }
+})();
+
+// ── SOUND ────────────────────────────────────────────────────
+function getAudioCtx() {
+  if (!AudioCtx) AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return AudioCtx;
 }
-updateSlider(document.getElementById('slCooling'));
+function playTone(freq, dur, type='sine', vol=0.1) {
+  if (!soundOn) return;
+  try {
+    const ctx = getAudioCtx();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + dur);
+    o.start(); o.stop(ctx.currentTime + dur);
+  } catch(e) {}
+}
+function playAlert() {
+  if (!soundOn) return;
+  playTone(880, 0.15, 'square', 0.15);
+  setTimeout(() => playTone(660, 0.15, 'square', 0.15), 200);
+}
+function playSuccess() {
+  if (!soundOn) return;
+  [523, 659, 784].forEach((f, i) => setTimeout(() => playTone(f, 0.2, 'sine', 0.12), i * 120));
+}
+function playStep(reward) {
+  if (!soundOn) return;
+  if (reward > 5) playTone(440, 0.1, 'sine', 0.06);
+  else if (reward < -3) playTone(220, 0.15, 'sawtooth', 0.08);
+}
+function toggleSound() {
+  soundOn = !soundOn;
+  const btn = document.getElementById('soundBtn');
+  btn.textContent = soundOn ? '🔊 Sound On' : '🔇 Sound Off';
+  btn.classList.toggle('on', soundOn);
+  if (soundOn) { getAudioCtx(); playTone(440, 0.1); }
+}
 
-// Init rack placeholders
+// ── SLIDER ───────────────────────────────────────────────────
+function updSlider(el) {
+  const p = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.setProperty('--p', p + '%');
+}
+updSlider(document.getElementById('slC'));
+
+// ── INIT RACKS ───────────────────────────────────────────────
 document.getElementById('rackGrid').innerHTML =
-  Array.from({length:12}, (_,i) => `
-    <div class="rack rack-safe">
-      <div class="rack-id">r${String(i).padStart(2,'0')}</div>
-      <div class="rack-temp temp-safe">—</div>
-      <div class="rack-icon">💤</div>
-      <div class="rack-util">idle</div>
+  Array.from({length:12},(_,i) => `
+    <div class="rack rs" data-tip="rack_${String(i).padStart(2,'0')} — idle">
+      <div class="ri">r${String(i).padStart(2,'0')}</div>
+      <div class="rt ts">—</div>
+      <div class="ric">💤</div>
+      <div class="ru">idle</div>
     </div>`).join('');
 
-// ── Power source ──────────────────────────────────────────────
-function setPower(src) {
-  selectedPower = src;
-  ['solar','wind','hybrid','grid'].forEach(s =>
-    document.getElementById(`psrc-${s}`).classList.toggle('active', s === src)
-  );
+// ── POWER ────────────────────────────────────────────────────
+function setPow(s) {
+  selPow = s;
+  ['solar','wind','hybrid','grid'].forEach(x =>
+    document.getElementById(`ps-${x}`).classList.toggle('act', x===s));
+}
+
+// ── TEMPERATURE CHART ────────────────────────────────────────
+const canvas = document.getElementById('tempChart');
+const ctx2d = canvas.getContext('2d');
+
+function drawTempChart() {
+  const W = canvas.offsetWidth, H = 120;
+  canvas.width = W; canvas.height = H;
+  ctx2d.clearRect(0, 0, W, H);
+
+  if (tempHist.length < 2) {
+    ctx2d.fillStyle = '#1a3a20';
+    ctx2d.font = '12px Segoe UI';
+    ctx2d.fillText('Start an episode to see temperature trends...', 20, H/2);
+    return;
+  }
+
+  const pad = {t:10, r:10, b:20, l:36};
+  const cW = W - pad.l - pad.r, cH = H - pad.t - pad.b;
+  const data = tempHist.slice(-40);
+  const minY = 15, maxY = 90;
+
+  // Grid lines
+  [30, 45, 60, 75].forEach(v => {
+    const y = pad.t + cH - ((v - minY) / (maxY - minY)) * cH;
+    ctx2d.strokeStyle = v === 45 ? '#00ff8820' : v === 65 ? '#ffaa0020' : '#ffffff08';
+    ctx2d.lineWidth = v === 45 || v === 65 ? 1 : 0.5;
+    ctx2d.setLineDash(v === 45 || v === 65 ? [4,4] : []);
+    ctx2d.beginPath(); ctx2d.moveTo(pad.l, y); ctx2d.lineTo(pad.l + cW, y); ctx2d.stroke();
+    ctx2d.setLineDash([]);
+    ctx2d.fillStyle = v === 45 ? '#00ff8860' : v === 65 ? '#ffaa0060' : '#2a4a30';
+    ctx2d.font = '9px monospace';
+    ctx2d.fillText(v + '°', 2, y + 3);
+  });
+
+  // Area fill
+  const grad = ctx2d.createLinearGradient(0, pad.t, 0, pad.t + cH);
+  grad.addColorStop(0, '#ff445520');
+  grad.addColorStop(0.4, '#ffaa0015');
+  grad.addColorStop(1, '#00ff8808');
+  ctx2d.beginPath();
+  data.forEach((v, i) => {
+    const x = pad.l + (i / (data.length - 1)) * cW;
+    const y = pad.t + cH - ((v - minY) / (maxY - minY)) * cH;
+    i === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
+  });
+  ctx2d.lineTo(pad.l + cW, pad.t + cH);
+  ctx2d.lineTo(pad.l, pad.t + cH);
+  ctx2d.closePath();
+  ctx2d.fillStyle = grad;
+  ctx2d.fill();
+
+  // Line
+  ctx2d.beginPath();
+  data.forEach((v, i) => {
+    const x = pad.l + (i / (data.length - 1)) * cW;
+    const y = pad.t + cH - ((v - minY) / (maxY - minY)) * cH;
+    i === 0 ? ctx2d.moveTo(x, y) : ctx2d.lineTo(x, y);
+  });
+  // Color based on current temp
+  const cur = data[data.length - 1];
+  ctx2d.strokeStyle = cur > 65 ? '#ff4455' : cur > 45 ? '#ffaa00' : '#00ff88';
+  ctx2d.lineWidth = 2;
+  ctx2d.stroke();
+
+  // Dots for last point
+  const lx = pad.l + cW, ly = pad.t + cH - ((cur - minY) / (maxY - minY)) * cH;
+  ctx2d.beginPath();
+  ctx2d.arc(lx, ly, 4, 0, Math.PI * 2);
+  ctx2d.fillStyle = cur > 65 ? '#ff4455' : cur > 45 ? '#ffaa00' : '#00ff88';
+  ctx2d.fill();
+  ctx2d.beginPath();
+  ctx2d.arc(lx, ly, 7, 0, Math.PI * 2);
+  ctx2d.strokeStyle = ctx2d.fillStyle;
+  ctx2d.lineWidth = 1;
+  ctx2d.globalAlpha = 0.4;
+  ctx2d.stroke();
+  ctx2d.globalAlpha = 1;
+}
+drawTempChart();
+
+// ── VS MODE ──────────────────────────────────────────────────
+function toggleVS() {
+  vsMode = !vsMode;
+  document.getElementById('vsPanel').classList.toggle('show', vsMode);
+  if (vsMode) addLog('⚔️ Human vs AI mode ON — play manually first, then AI will run for comparison', 'ls');
+}
+
+async function runAIComparison() {
+  addLog('🤖 Running AI agent for comparison...', 'ls');
+  const diff = document.getElementById('selDiff').value;
+  try {
+    const r = await fetch(`${API}/reset`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({difficulty:diff})});
+    let obs = (await r.json()).observation;
+    let aiReward = 0;
+
+    for (let i = 0; i < 72 && !obs.done; i++) {
+      let cool = obs.avg_temperature > 55 ? 5 : obs.avg_temperature > 45 ? 4 : obs.avg_temperature > 35 ? 3 : obs.avg_temperature < 25 ? 1 : 2;
+      let pow  = obs.solar_availability > 0.5 ? 'solar' : obs.wind_availability > 0.5 ? 'wind' : 'hybrid';
+      let wl   = obs.avg_temperature > 55 || obs.failed_racks > 0 ? 'eco_mode' : obs.avg_temperature < 38 && obs.incoming_workload > 0.6 ? 'high_performance' : 'balanced';
+      let def  = obs.incoming_workload > 0.75 || obs.time_of_day === 'afternoon';
+      const sr = await fetch(`${API}/step`, {method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({cooling_level:cool,workload_distribution:wl,power_source:pow,defer_non_critical:def})});
+      const sd = await sr.json();
+      obs = sd.observation; aiReward += sd.reward;
+    }
+
+    const g = await (await fetch(`${API}/grade`)).json();
+    document.getElementById('aC').textContent  = obs.total_carbon_kg.toFixed(1) + ' kg';
+    document.getElementById('aT').textContent  = obs.tasks_completed;
+    document.getElementById('aF').textContent  = obs.failed_racks;
+    document.getElementById('aSL').textContent = obs.sla_violations;
+    document.getElementById('aRw').textContent = aiReward.toFixed(1);
+    document.getElementById('aGr').textContent = `${g.grade} (${(g.score*100).toFixed(0)}%)`;
+    addLog(`🤖 AI done! Grade: ${g.grade} (${(g.score*100).toFixed(0)}%) — compare with your score above!`, 'lp');
+    playSuccess();
+  } catch(e) { addLog('AI comparison error: ' + e.message, 'ln'); }
 }
 
 // ── API ───────────────────────────────────────────────────────
-async function resetEpisode() {
+async function resetEp() {
   const diff = document.getElementById('selDiff').value;
   try {
-    const res = await fetch(`${API}/reset`, {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({difficulty: diff})
-    });
-    const data = await res.json();
-    totalReward = 0; rewardHistory = []; episodeStarted = true;
-    lastObs = data.observation;
-    renderUI(data.observation, 0, false);
+    const r = await fetch(`${API}/reset`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({difficulty:diff})});
+    const d = await r.json();
+    totalReward = 0; rewardHist = []; tempHist = []; started = true;
+    lastObs = d.observation;
+    renderUI(d.observation, 0, false);
     fetchGrade();
-    addLog(`▶ Episode started | Difficulty: ${diff} | Weather: ${data.observation.weather}`, 'sys');
-  } catch(e) {
-    addLog('❌ Cannot connect. Is the server running?', 'neg');
-  }
+    drawTempChart();
+    addLog(`▶ Episode started | ${diff} | ${d.observation.weather} | ${d.observation.time_of_day}`, 'ls');
+    playTone(330, 0.2, 'sine', 0.08);
+  } catch(e) { addLog('❌ Cannot connect. Start the server!', 'ln'); }
 }
 
-async function doStep(cooling, workload, power, defer) {
-  if (!episodeStarted) return;
+async function doStep(cool, wl, pow, def) {
+  if (!started) return;
   try {
-    const res = await fetch(`${API}/step`, {
+    const r = await fetch(`${API}/step`, {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({
-        cooling_level: cooling,
-        workload_distribution: workload,
-        power_source: power,
-        defer_non_critical: defer
-      })
+      body: JSON.stringify({cooling_level:cool,workload_distribution:wl,power_source:pow,defer_non_critical:def})
     });
-    const data = await res.json();
-    totalReward += data.reward;
-    rewardHistory.push(data.reward);
-    lastObs = data.observation;
-    renderUI(data.observation, data.reward, data.done);
+    const d = await r.json();
+    totalReward += d.reward; rewardHist.push(d.reward);
+    const o = d.observation;
+    tempHist.push(o.avg_temperature);
+    lastObs = o;
+    renderUI(o, d.reward, d.done);
     fetchGrade();
+    drawTempChart();
+    playStep(d.reward);
 
-    const o = data.observation;
-    const cls = data.reward >= 0 ? 'pos' : 'neg';
-    addLog(
-      `Step ${o.step_number} | ${power.padEnd(6)} | cool=${cooling} | ` +
-      `${o.avg_temperature.toFixed(1)}°C | ` +
-      `PUE=${o.pue.toFixed(2)} | ` +
-      `carbon=${o.carbon_emissions_kg.toFixed(2)}kg | ` +
-      `reward=${data.reward > 0 ? '+' : ''}${data.reward.toFixed(1)}`,
-      cls
-    );
-    if (o.failed_racks > 0)
-      addLog(`🔥 ${o.failed_racks} rack(s) have FAILED!`, 'neg');
-    if (o.avg_temperature > 65)
-      addLog(`🌡️ WARNING: Avg temp ${o.avg_temperature.toFixed(1)}°C — increase cooling!`, 'warn');
-    if (o.sla_violations > 0)
-      addLog(`⚠️ SLA violation! Deferred tasks: ${o.deferred_tasks}`, 'warn');
+    const cls = d.reward >= 0 ? 'lp' : 'ln';
+    addLog(`S${o.step_number} | ${pow.padEnd(6)} | cool=${cool} | ${o.avg_temperature.toFixed(1)}°C | PUE=${o.pue.toFixed(2)} | C=${o.carbon_emissions_kg.toFixed(2)}kg | r=${d.reward>0?'+':''}${d.reward.toFixed(1)}`, cls);
+    if (o.failed_racks > 0) { addLog(`💀 ${o.failed_racks} rack(s) FAILED!`, 'ln'); playAlert(); }
+    if (o.avg_temperature > 68) { addLog(`🌡️ WARN: ${o.avg_temperature.toFixed(1)}°C — increase cooling!`, 'lw'); playAlert(); }
 
-    if (data.done) {
-      episodeStarted = false;
-      stopAuto();
-      setTimeout(() => showOverlay(data.final_grade), 600);
+    if (d.done) {
+      started = false; stopAuto();
+      playSuccess();
+      // Save human stats for VS mode
+      if (vsMode && !humanDone) {
+        humanDone = true;
+        document.getElementById('hC').textContent  = o.total_carbon_kg.toFixed(1) + ' kg';
+        document.getElementById('hT').textContent  = o.tasks_completed;
+        document.getElementById('hF').textContent  = o.failed_racks;
+        document.getElementById('hSL').textContent = o.sla_violations;
+        document.getElementById('hRw').textContent = totalReward.toFixed(1);
+        setTimeout(runAIComparison, 800);
+      }
+      setTimeout(() => showOverlay(d.final_grade), 700);
     }
-  } catch(e) { addLog('❌ Step error: ' + e.message, 'neg'); }
+  } catch(e) { addLog('❌ Step error', 'ln'); }
 }
 
 async function manualStep() {
-  if (!episodeStarted) { addLog('⚠️ Start an episode first!', 'warn'); return; }
-  const cooling  = parseInt(document.getElementById('slCooling').value);
-  const workload = document.getElementById('selWorkload').value;
-  const defer    = document.getElementById('selDefer').value === 'true';
-  await doStep(cooling, workload, selectedPower, defer);
+  if (!started) { addLog('⚠️ Start an episode first!', 'lw'); return; }
+  await doStep(
+    parseInt(document.getElementById('slC').value),
+    document.getElementById('selWL').value,
+    selPow,
+    document.getElementById('selDef').value === 'true'
+  );
 }
 
 async function autoPlay() {
-  if (!episodeStarted) await resetEpisode();
-  if (autoInterval) clearInterval(autoInterval);
-  autoInterval = setInterval(async () => {
-    if (!episodeStarted) { stopAuto(); return; }
-    const o = lastObs;
-    if (!o) return;
+  if (!started) await resetEp();
+  if (autoInt) clearInterval(autoInt);
+  autoInt = setInterval(async () => {
+    if (!started) { stopAuto(); return; }
+    const o = lastObs; if (!o) return;
+    // Smarter cooling — never let temp creep above 50
+let cool = o.avg_temperature > 65 ? 5 :
+           o.avg_temperature > 55 ? 5 :
+           o.avg_temperature > 45 ? 4 :
+           o.avg_temperature > 35 ? 3 :
+           o.avg_temperature < 25 ? 1 : 2;
 
-    // Smart AI agent decisions
-    let cooling, workload, power, defer;
+// Always prefer renewables — use hybrid even when availability is low
+let pow  = o.solar_availability > 0.5 ? 'solar' :
+           o.wind_availability  > 0.5 ? 'wind'  :
+           o.solar_availability > 0.1 || o.wind_availability > 0.1 ? 'hybrid' :
+           'hybrid'; // NEVER use grid — hybrid is always better
 
-    // Temperature management
-    if      (o.avg_temperature > 70) cooling = 5;
-    else if (o.avg_temperature > 55) cooling = 4;
-    else if (o.avg_temperature > 40) cooling = 3;
-    else if (o.avg_temperature < 28) cooling = 1;
-    else                             cooling = 2;
+// Workload — be conservative with temperature
+let wl   = o.avg_temperature > 55 ? 'eco_mode' :
+           o.failed_racks > 0      ? 'eco_mode' :
+           o.avg_temperature < 38 && o.incoming_workload > 0.6 ? 'high_performance' :
+           'balanced';
 
-    // Renewable-first power selection
-    if      (o.solar_availability > 0.6)  power = 'solar';
-    else if (o.wind_availability  > 0.6)  power = 'wind';
-    else if (o.solar_availability > 0.3 ||
-             o.wind_availability  > 0.3)  power = 'hybrid';
-    else                                  power = 'grid';
-
-    // Workload based on temperature
-    if      (o.avg_temperature > 65 || o.failed_racks > 1) workload = 'eco_mode';
-    else if (o.incoming_workload > 0.75 && o.avg_temperature < 45) workload = 'high_performance';
-    else    workload = 'balanced';
-
-    // Defer during afternoon peak
-    defer = o.time_of_day === 'afternoon' && o.incoming_workload > 0.7;
-
-    setPower(power);
-    document.getElementById('slCooling').value = cooling;
-    updateSlider(document.getElementById('slCooling'));
-
-    await doStep(cooling, workload, power, defer);
-  }, 650);
+// Defer during ANY high-load period, not just afternoon
+let def  = o.incoming_workload > 0.75 || o.time_of_day === 'afternoon';
+    setPow(pow);
+    document.getElementById('slC').value = cool;
+    updSlider(document.getElementById('slC'));
+    document.getElementById('clbl').textContent = cool;
+    document.getElementById('sv2').textContent  = cool;
+    await doStep(cool, wl, pow, def);
+  }, 620);
 }
 
-function stopAuto() {
-  if (autoInterval) { clearInterval(autoInterval); autoInterval = null; }
-}
+function stopAuto() { if (autoInt) { clearInterval(autoInt); autoInt = null; } }
 
-// ── Render ────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────
 function renderUI(o, reward, done) {
   // Racks
-  const grid = document.getElementById('rackGrid');
-  grid.innerHTML = o.server_racks.map(r => {
-    if (r.is_failed) return `
-      <div class="rack rack-dead">
-        <div class="rack-id">${r.id.replace('rack_','r')}</div>
-        <div class="rack-temp">FAIL</div>
-        <div class="rack-icon">💀</div>
-        <div class="rack-util">—</div>
-      </div>`;
-
+  document.getElementById('rackGrid').innerHTML = o.server_racks.map(r => {
+    if (r.is_failed) return `<div class="rack rd" data-tip="${r.id} — FAILED"><div class="ri">${r.id.slice(-2)}</div><div class="rt">FAIL</div><div class="ric">💀</div><div class="ru">—</div></div>`;
     const t = r.temperature;
-    const cls  = t > 75 ? 'rack-crit' : t > 60 ? 'rack-hot' : t > 45 ? 'rack-warm' : 'rack-safe';
-    const tcls = t > 75 ? 'temp-crit' : t > 60 ? 'temp-hot'  : t > 45 ? 'temp-warm' : 'temp-safe';
-    const icon = r.is_overheated ? '🔥' : t > 45 ? '⚠️' : '✅';
-    const util = (r.utilization * 100).toFixed(0);
-    return `
-      <div class="rack ${cls}">
-        <div class="rack-id">${r.id.replace('rack_','r')}</div>
-        <div class="rack-temp ${tcls}">${t.toFixed(0)}°</div>
-        <div class="rack-icon">${icon}</div>
-        <div class="rack-util">${util}%</div>
-      </div>`;
+    const rc = t > 75 ? 'rc' : t > 60 ? 'rh' : t > 45 ? 'rw' : 'rs';
+    const tc = t > 75 ? 'tc' : t > 60 ? 'th' : t > 45 ? 'tw' : 'ts';
+    const ic = r.is_overheated ? '🔥' : t > 45 ? '⚠️' : '✅';
+    return `<div class="rack ${rc}" data-tip="${r.id} | ${t.toFixed(1)}°C | ${(r.utilization*100).toFixed(0)}% util"><div class="ri">${r.id.slice(-2)}</div><div class="rt ${tc}">${t.toFixed(0)}°</div><div class="ric">${ic}</div><div class="ru">${(r.utilization*100).toFixed(0)}%</div></div>`;
   }).join('');
 
-  // Status pills
-  const wi = {sunny:'☀️',cloudy:'☁️',windy:'💨',stormy:'⛈️'};
-  const ti = {morning:'🌅',afternoon:'☀️',evening:'🌆',night:'🌙'};
-  let pills = `
-    <span class="pill pill-b">${ti[o.time_of_day]||'⏰'} ${o.time_of_day}</span>
-    <span class="pill pill-g">${wi[o.weather]||'🌤'} ${o.weather}</span>
-    <span class="pill pill-o">🌡️ ${o.outside_temp.toFixed(0)}°C outside</span>
-    <span class="pill pill-g">💡 ${o.renewable_percentage.toFixed(0)}% renewable</span>`;
-  if (o.failed_racks > 0)   pills += `<span class="pill pill-r">💀 ${o.failed_racks} failed</span>`;
-  if (o.sla_violations > 0) pills += `<span class="pill pill-r">⚠️ ${o.sla_violations} SLA</span>`;
-  document.getElementById('pills').innerHTML = pills;
+  // Pills
+  const wi={sunny:'☀️',cloudy:'☁️',windy:'💨',stormy:'⛈️'}, ti={morning:'🌅',afternoon:'☀️',evening:'🌆',night:'🌙'};
+  let p = `<span class="pill pb2">${ti[o.time_of_day]||'⏰'} ${o.time_of_day}</span><span class="pill pg2">${wi[o.weather]||'🌤'} ${o.weather}</span><span class="pill po2">🌡️ ${o.outside_temp.toFixed(0)}°C</span><span class="pill pg2">💡 ${o.renewable_percentage.toFixed(0)}%</span>`;
+  if (o.failed_racks > 0) p += `<span class="pill pr2">💀 ${o.failed_racks} failed</span>`;
+  if (o.sla_violations > 0) p += `<span class="pill pr2">⚠️ ${o.sla_violations} SLA</span>`;
+  document.getElementById('pills').innerHTML = p;
 
-  // Alert banner
-  const banner = document.getElementById('alertBanner');
-  if (o.failed_racks > 2 || o.avg_temperature > 78) {
-    banner.style.display = 'block';
-    banner.textContent = o.failed_racks > 2
-      ? `💀 CRITICAL: ${o.failed_racks} server racks have FAILED — switch to eco_mode immediately!`
-      : `🌡️ THERMAL ALERT: ${o.avg_temperature.toFixed(1)}°C avg — increase cooling to level 5!`;
-  } else { banner.style.display = 'none'; }
+  // Alert
+  const ab = document.getElementById('alertBanner');
+  if (o.failed_racks > 2 || o.avg_temperature > 76) {
+    ab.style.display = 'block';
+    ab.textContent = o.failed_racks > 2 ? `💀 CRITICAL: ${o.failed_racks} racks FAILED — switch to eco_mode!` : `🌡️ THERMAL ALERT: ${o.avg_temperature.toFixed(1)}°C — cooling level 5 immediately!`;
+  } else ab.style.display = 'none';
 
-  // Power availability
-  document.getElementById('pav-solar').textContent  = (o.solar_availability*100).toFixed(0) + '%';
-  document.getElementById('pav-wind').textContent   = (o.wind_availability*100).toFixed(0) + '%';
-  document.getElementById('pav-hybrid').textContent = ((o.solar_availability+o.wind_availability)*50).toFixed(0) + '%';
-  const solarEl = document.getElementById('pav-solar');
-  solarEl.className = 'power-avail ' + (o.solar_availability > 0.5 ? 'avail-good' : o.solar_availability > 0.2 ? 'avail-mid' : 'avail-bad');
-
-  // Carbon bar
-  const pct = Math.min(o.total_carbon_kg / 350 * 100, 100);
-  document.getElementById('carbonFill').style.width = pct + '%';
-  document.getElementById('carbonKg').textContent = o.total_carbon_kg.toFixed(1) + ' kg CO₂';
-
-  // Metrics
-  const setMetric = (id, val, good, warn) => {
+  // Power avail
+  const pAvail = (id, val, thresh) => {
     const el = document.getElementById(id);
-    if (el) {
-      el.textContent = val;
-      el.className = 'metric-val ' + (
-        typeof good === 'function' ? good(parseFloat(val)) :
-        parseFloat(val) <= good ? 'val-good' :
-        parseFloat(val) <= warn ? 'val-warn' : 'val-bad'
-      );
-    }
+    el.textContent = (val*100).toFixed(0) + '%';
+    el.className = 'pv ' + (val > thresh ? 'pg-' : val > thresh*0.4 ? 'po-' : 'pr-');
   };
+  pAvail('pv-solar',  o.solar_availability, 0.5);
+  pAvail('pv-wind',   o.wind_availability, 0.5);
+  pAvail('pv-hybrid', (o.solar_availability+o.wind_availability)/2, 0.4);
 
-  setMetric('mTemp',   o.avg_temperature.toFixed(1), 45, 65);
-  setMetric('mPUE',    o.pue.toFixed(2), v => v < 1.4 ? 'val-blue' : v < 1.8 ? 'val-warn' : 'val-bad');
-  setMetric('mRenew',  o.renewable_percentage.toFixed(0) + '%', v => parseFloat(v) > 60 ? 'val-good' : parseFloat(v) > 30 ? 'val-warn' : 'val-bad');
-  setMetric('mTasks',  o.tasks_completed, Infinity, Infinity);
-  document.getElementById('mTasks').className = 'metric-val val-good';
-  document.getElementById('mStep').textContent = `${o.step_number}/72`;
-  document.getElementById('mStep').className = 'metric-val val-blue';
-  document.getElementById('mReward').textContent = totalReward.toFixed(1);
-  document.getElementById('mReward').className = 'metric-val ' + (totalReward >= 0 ? 'val-good' : 'val-bad');
-  setMetric('mSLA',    o.sla_violations, 0, 3);
-  document.getElementById('mSLA').className = 'metric-val ' + (o.sla_violations === 0 ? 'val-good' : o.sla_violations < 5 ? 'val-warn' : 'val-bad');
-  setMetric('mFailed', o.failed_racks, 0, 2);
-  document.getElementById('mFailed').className = 'metric-val ' + (o.failed_racks === 0 ? 'val-good' : o.failed_racks < 3 ? 'val-warn' : 'val-bad');
+  // Carbon
+  document.getElementById('cFill').style.width = Math.min(o.total_carbon_kg/350*100,100) + '%';
+  document.getElementById('ckg').textContent = o.total_carbon_kg.toFixed(1) + ' kg CO₂';
+  document.getElementById('ckg').style.color = o.total_carbon_kg < 50 ? 'var(--green)' : o.total_carbon_kg < 150 ? 'var(--orange)' : 'var(--red)';
 
-  // Chart
-  const chart = document.getElementById('chart');
-  const last  = rewardHistory.slice(-60);
-  const maxR  = Math.max(...last.map(Math.abs), 1);
-  chart.innerHTML = last.map(r => {
-    const h = (Math.abs(r) / maxR * 100).toFixed(0);
-    return `<div class="cbar" style="height:${h}%;background:${r>=0?'var(--green)':'var(--red)'};opacity:0.85"></div>`;
-  }).join('');
+  // Mini chart
+  const mc = document.getElementById('miniChart');
+  const last = rewardHist.slice(-60), mx = Math.max(...last.map(Math.abs),1);
+  mc.innerHTML = last.map(r => `<div class="mbar" style="height:${(Math.abs(r)/mx*100).toFixed(0)}%;background:${r>=0?'var(--green)':'var(--red)'};opacity:0.85"></div>`).join('');
+
+  // Metrics helper
+  const sm = (id, val, gcls) => { const el=document.getElementById(id); if(el){el.textContent=val; el.className='mv '+gcls;} };
+  const t = o.avg_temperature;
+  sm('mT', t.toFixed(1), t<45?'vg':t<65?'vw':'vb');
+  sm('mP', o.pue.toFixed(2), o.pue<1.4?'vbl':o.pue<1.8?'vw':'vb');
+  sm('mR', o.renewable_percentage.toFixed(0)+'%', o.renewable_percentage>60?'vg':o.renewable_percentage>30?'vw':'vb');
+  sm('mTk', o.tasks_completed, 'vg');
+  sm('mSt', `${o.step_number}/72`, 'vbl');
+  sm('mRw', totalReward.toFixed(1), totalReward>=0?'vg':'vb');
+  sm('mSL', o.sla_violations, o.sla_violations===0?'vg':o.sla_violations<5?'vw':'vb');
+  sm('mF',  o.failed_racks, o.failed_racks===0?'vg':o.failed_racks<3?'vw':'vb');
 }
 
 async function fetchGrade() {
   try {
-    const res = await fetch(`${API}/grade`);
-    const g = await res.json();
+    const g = await (await fetch(`${API}/grade`)).json();
+    if (!g.grade) return;
     renderGrade(g, 'gradeBox');
+    document.getElementById('headerScore').textContent = `Score: ${(g.score*100).toFixed(0)}% ${g.grade}`;
   } catch(e) {}
 }
 
 function renderGrade(g, id) {
-  if (!g || !g.grade) return;
-  const el = document.getElementById(id);
-  if (!el) return;
-  const scoreColor = g.score >= 0.7 ? 'var(--green)' : g.score >= 0.5 ? 'var(--orange)' : 'var(--red)';
-  const s = g.stats || {};
+  const el = document.getElementById(id); if (!el || !g.grade) return;
+  const sc = g.score>=0.7?'var(--green)':g.score>=0.5?'var(--orange)':'var(--red)';
+  const s = g.stats||{};
   el.innerHTML = `
-    <div class="grade-wrap">
-      <div class="grade-circle g${g.grade}">${g.grade}</div>
-      <div class="grade-details">
-        <div class="grade-pct" style="color:${scoreColor}">${(g.score*100).toFixed(0)}%</div>
-        <div class="grade-feedback">${g.feedback}</div>
-        <div class="grade-bar"><div class="grade-fill" style="width:${g.score*100}%"></div></div>
-        <div class="grade-stats">
-          <div class="grade-stat">Carbon: <span>${s.total_carbon_kg ?? '—'}kg</span></div>
-          <div class="grade-stat">Tasks: <span>${s.tasks_completed ?? '—'}</span></div>
-          <div class="grade-stat">Reliability: <span>${s.reliability_score != null ? (s.reliability_score*100).toFixed(0)+'%' : '—'}</span></div>
-          <div class="grade-stat">Consistency: <span>${s.consistency_score != null ? (s.consistency_score*100).toFixed(0)+'%' : '—'}</span></div>
+    <div class="gw">
+      <div class="gc g${g.grade}">${g.grade}</div>
+      <div class="gd">
+        <div class="gp" style="color:${sc}">${(g.score*100).toFixed(0)}%</div>
+        <div class="gf">${g.feedback}</div>
+        <div class="gbar"><div class="gfill" style="width:${g.score*100}%"></div></div>
+        <div class="gsg">
+          <div class="gss">Carbon: <span>${s.total_carbon_kg??'—'}kg</span></div>
+          <div class="gss">Tasks: <span>${s.tasks_completed??'—'}</span></div>
+          <div class="gss">Reliability: <span>${s.reliability_score!=null?(s.reliability_score*100).toFixed(0)+'%':'—'}</span></div>
+          <div class="gss">Consistency: <span>${s.consistency_score!=null?(s.consistency_score*100).toFixed(0)+'%':'—'}</span></div>
         </div>
       </div>
     </div>`;
 }
 
-function showOverlay(gradeData) {
+function showOverlay(g) {
   document.getElementById('overlay').style.display = 'flex';
-  if (gradeData) {
-    document.getElementById('overlayMsg').textContent = gradeData.feedback || 'Episode complete!';
-    renderGrade(gradeData, 'overlayGrade');
-  }
+  if (g) { document.getElementById('ovMsg').textContent = g.feedback||''; renderGrade(g,'ovGrade'); }
 }
-function hideOverlay() {
-  document.getElementById('overlay').style.display = 'none';
-  resetEpisode();
+function hideOverlay() { document.getElementById('overlay').style.display='none'; humanDone=false; resetEp(); }
+
+function addLog(msg, cls='li') {
+  const b = document.getElementById('logBox');
+  const d = document.createElement('div');
+  d.className = 'll ' + cls;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  b.appendChild(d);
+  b.scrollTop = b.scrollHeight;
+  while (b.children.length > 100) b.removeChild(b.firstChild);
 }
 
-function addLog(msg, type='info') {
-  const box = document.getElementById('log');
-  const d = document.createElement('div');
-  d.className = `lg lg-${type}`;
-  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-  box.appendChild(d);
-  box.scrollTop = box.scrollHeight;
-  // Keep max 100 lines
-  while (box.children.length > 100) box.removeChild(box.firstChild);
-}
+// Resize handler for canvas
+window.addEventListener('resize', drawTempChart);
 </script>
 </body>
 </html>
