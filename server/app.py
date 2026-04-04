@@ -1,3 +1,4 @@
+from fastapi.responses import HTMLResponse
 import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -84,9 +85,19 @@ def health():
     return {"status": "healthy"}
 
 
-@app.get("/")
-def dashboard_redirect():
-    return {"message": "Visit /dashboard for the visual interface or /docs for API"}
+@app.get("/", response_class=HTMLResponse, include_in_schema=False)
+def root():
+    path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "dashboard.html")
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            content = f.read()
+        content = content.replace(
+            "const API = 'http://127.0.0.1:8000'",
+            "const API = window.location.origin"
+        )
+        return HTMLResponse(content=content)
+    except Exception as e:
+        return HTMLResponse(f"<h1>Error loading dashboard: {e}</h1>")
 
 
 @app.post("/reset")
