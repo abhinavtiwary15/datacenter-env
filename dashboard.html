@@ -381,7 +381,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </div><!-- end page -->
 
 <script>
-const API = 'http://127.0.0.1:8000';
+const API = window.location.origin.includes('127.0.0.1') ? 'http://127.0.0.1:8000' : window.location.origin;
 let totalReward = 0, rewardHist = [], tempHist = [];
 let autoInt = null, started = false, lastObs = null;
 let selPow = 'hybrid', soundOn = false;
