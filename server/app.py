@@ -40,6 +40,47 @@ app.add_middleware(
 
 env = DataCenterEnvironment()
 
+# ── Override OpenAPI schema to include Action/Observation/State ──
+from fastapi.openapi.utils import get_openapi
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    schema = get_openapi(title=app.title, version=app.version, routes=app.routes)
+    schema.setdefault("components", {}).setdefault("schemas", {}).update({
+        "Action": {
+            "type": "object",
+            "properties": {
+                "cooling_level": {"type": "integer"},
+                "workload_distribution": {"type": "string"},
+                "power_source": {"type": "string"},
+                "defer_non_critical": {"type": "boolean"}
+            }
+        },
+        "Observation": {
+            "type": "object",
+            "properties": {
+                "avg_temperature": {"type": "number"},
+                "failed_racks": {"type": "integer"},
+                "total_carbon_kg": {"type": "number"},
+                "done": {"type": "boolean"},
+                "reward": {"type": "number"}
+            }
+        },
+        "State": {
+            "type": "object",
+            "properties": {
+                "step": {"type": "integer"},
+                "total_carbon_kg": {"type": "number"},
+                "done": {"type": "boolean"}
+            }
+        }
+    })
+    app.openapi_schema = schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
+
 
 class ResetRequest(BaseModel):
     difficulty: Optional[str] = "medium"
@@ -199,24 +240,63 @@ async def mcp_endpoint(request: Request):
             ]
         }
     }
-@app.get("/openapi.json", include_in_schema=False)
-def custom_openapi():
+@app.get("/metadata", summary="Environment metadata")
+def metadata():
     return {
-        "openapi": "3.0.0",
-        "info": {"title": "Sustainable Data Center RL Environment", "version": "1.0.0"},
-        "components": {
-            "schemas": {
-                "Action": {
-                    "type": "object",
-                    "properties": {
-                        "cooling_level": {"type": "integer"},
-                        "workload_distribution": {"type": "string"},
-                        "power_source": {"type": "string"},
-                        "defer_non_critical": {"type": "boolean"}
-                    }
-                },
-                "Observation": {"type": "object"},
-                "State": {"type": "object"}
+        "name": "datacenter-env",
+        "version": "1.0.0",
+        "description": "Sustainable Data Center RL Environment",
+        "action": {
+            "type": "object",
+            "properties": {
+                "cooling_level": {"type": "integer", "minimum": 1, "maximum": 5},
+                "workload_distribution": {"type": "string", "enum": ["eco_mode", "balanced", "high_performance"]},
+                "power_source": {"type": "string", "enum": ["solar", "wind", "hybrid", "grid"]},
+                "defer_non_critical": {"type": "boolean"}
             }
+        },
+        "observation": {
+            "type": "object",
+            "properties": {
+                "avg_temperature": {"type": "number"},
+                "failed_racks": {"type": "integer"},
+                "total_carbon_kg": {"type": "number"},
+                "pue": {"type": "number"},
+                "done": {"type": "boolean"},
+                "reward": {"type": "number"}
+            }
+        },
+        "state": {
+            "type": "object",
+            "properties": {
+                "step": {"type": "integer"},
+                "total_carbon_kg": {"type": "number"},
+                "done": {"type": "boolean"}
+            }
+        }
+    }
+
+
+@app.get("/schema", summary="Environment schema")
+def schema():
+    return {
+        "action": {
+            "cooling_level": {"type": "integer", "minimum": 1, "maximum": 5},
+            "workload_distribution": {"type": "string"},
+            "power_source": {"type": "string"},
+            "defer_non_critical": {"type": "boolean"}
+        },
+        "observation": {
+            "avg_temperature": {"type": "number"},
+            "failed_racks": {"type": "integer"},
+            "total_carbon_kg": {"type": "number"},
+            "pue": {"type": "number"},
+            "done": {"type": "boolean"},
+            "reward": {"type": "number"}
+        },
+        "state": {
+            "step": {"type": "integer"},
+            "total_carbon_kg": {"type": "number"},
+            "done": {"type": "boolean"}
         }
     }
