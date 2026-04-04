@@ -2,7 +2,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -167,3 +167,35 @@ def dashboard():
         return HTMLResponse(content=content)
     except Exception as e:
         return HTMLResponse(f"<h1>Error: {e}</h1>")
+    
+@app.get("/openapi-schema", include_in_schema=False)
+def openapi_schema():
+    return {
+        "action": {
+            "type": "object",
+            "properties": {
+                "cooling_level": {"type": "integer", "minimum": 1, "maximum": 5},
+                "workload_distribution": {"type": "string", "enum": ["eco_mode", "balanced", "high_performance"]},
+                "power_source": {"type": "string", "enum": ["solar", "wind", "hybrid", "grid"]},
+                "defer_non_critical": {"type": "boolean"}
+            }
+        },
+        "observation": {"type": "object"},
+        "state": {"type": "object"}
+    }
+
+
+@app.post("/mcp", include_in_schema=False)
+async def mcp_endpoint(request: Request):
+    return {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+            "tools": [
+                {"name": "reset", "description": "Reset the data center environment"},
+                {"name": "step", "description": "Take one control action"},
+                {"name": "state", "description": "Get full environment state"},
+                {"name": "grade", "description": "Get performance grade 0.0-1.0"}
+            ]
+        }
+    }
