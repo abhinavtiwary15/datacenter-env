@@ -199,3 +199,24 @@ async def mcp_endpoint(request: Request):
             ]
         }
     }
+@app.get("/openapi.json", include_in_schema=False)
+def custom_openapi():
+    return {
+        "openapi": "3.0.0",
+        "info": {"title": "Sustainable Data Center RL Environment", "version": "1.0.0"},
+        "components": {
+            "schemas": {
+                "Action": {
+                    "type": "object",
+                    "properties": {
+                        "cooling_level": {"type": "integer"},
+                        "workload_distribution": {"type": "string"},
+                        "power_source": {"type": "string"},
+                        "defer_non_critical": {"type": "boolean"}
+                    }
+                },
+                "Observation": {"type": "object"},
+                "State": {"type": "object"}
+            }
+        }
+    }
