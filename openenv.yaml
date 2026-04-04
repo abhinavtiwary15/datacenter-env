@@ -1,0 +1,22 @@
+spec_version: 1
+name: datacenter-env
+type: environment
+runtime: docker
+app: server/app.py
+port: 7860
+
+metadata:
+  title: "Sustainable Data Center RL Environment"
+  description: "AI agent optimizes data center efficiency while minimizing carbon emissions"
+  version: "1.0.0"
+  tags:
+    - reinforcement-learning
+    - sustainability
+    - data-center
+    - green-computing
+    - openenv
+
+environment:
+  action_type: DataCenterAction
+  observation_type: DataCenterObservation
+  state_type: DataCenterState

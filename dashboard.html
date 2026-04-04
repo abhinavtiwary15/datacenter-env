@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌱 Sustainable Data Center — RL Environment</title>
+<style>
+:root {
+  --bg:       #030a06;
+  --surface:  #071510;
+  --surface2: #0c1f14;
+  --border:   #0f3a1a;
+  --green:    #00ff88;
+  --green2:   #00cc66;
+  --blue:     #00aaff;
+  --orange:   #ffaa00;
+  --red:      #ff4455;
+  --text:     #d0e8d8;
+  --muted:    #3a5a42;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #030a06, #071a0c);
+  border-bottom: 1px solid #00ff8822;
+  padding: 0 40px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  backdrop-filter: blur(10px);
+}
+.header-left { display:flex; align-items:center; gap:14px; }
+.header-icon { font-size:1.8rem; }
+.header-title { font-size:1.1rem; font-weight:700; color:var(--green); letter-spacing:0.5px; }
+.header-sub { font-size:0.72rem; color:var(--muted); margin-top:1px; }
+.header-right { display:flex; align-items:center; gap:12px; }
+.status-dot { width:8px; height:8px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green); animation:blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.version { background:#00ff8815; border:1px solid #00ff8830; color:var(--green); padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:600; }
+
+/* ── LAYOUT ── */
+.page { padding:20px 32px; max-width:1600px; margin:auto; display:flex; flex-direction:column; gap:16px; }
+.row { display:grid; gap:16px; }
+.row-3 { grid-template-columns:1fr 1fr 1fr; }
+.row-2 { grid-template-columns:1fr 1fr; }
+.row-4 { grid-template-columns:repeat(4,1fr); }
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--green),transparent);
+  opacity:0.4;
+}
+.card-title {
+  font-size:0.7rem;
+  color:var(--muted);
+  text-transform:uppercase;
+  letter-spacing:2px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+/* ── CONTROL PANEL ── */
+.controls-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:16px; }
+.ctrl-group label { display:block; font-size:0.68rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+.ctrl-group select {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); padding:9px 12px; border-radius:8px; font-size:0.83rem;
+  cursor:pointer; outline:none; transition:border 0.2s;
+}
+.ctrl-group select:focus { border-color:var(--green); }
+.ctrl-group .slider-wrap { display:flex; align-items:center; gap:8px; }
+.ctrl-group input[type=range] {
+  flex:1; -webkit-appearance:none; height:4px; border-radius:2px;
+  background:linear-gradient(90deg,var(--green) var(--pct,60%),var(--border) var(--pct,60%));
+  outline:none; cursor:pointer;
+}
+.ctrl-group input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:14px; height:14px; border-radius:50%;
+  background:var(--green); box-shadow:0 0 6px var(--green);
+}
+.slider-val { color:var(--green); font-size:0.85rem; font-weight:700; min-width:16px; }
+
+.btn-row { display:flex; gap:10px; flex-wrap:wrap; }
+.btn {
+  padding:10px 22px; border:none; border-radius:9px; font-size:0.85rem;
+  font-weight:600; cursor:pointer; transition:all 0.18s; letter-spacing:0.3px;
+  display:flex; align-items:center; gap:6px;
+}
+.btn:hover { transform:translateY(-1px); filter:brightness(1.15); }
+.btn:active { transform:translateY(0); }
+.btn-start  { background:linear-gradient(135deg,var(--green),var(--green2)); color:#000; }
+.btn-auto   { background:linear-gradient(135deg,#0088ff,#0055cc); color:#fff; }
+.btn-stop   { background:linear-gradient(135deg,var(--red),#cc0022); color:#fff; }
+.btn-step   { background:var(--surface2); border:1px solid var(--border); color:var(--green); }
+.btn-step:hover { border-color:var(--green); }
+
+/* ── RACK GRID ── */
+.rack-section { grid-column:1/-1; }
+.rack-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.pills { display:flex; gap:8px; flex-wrap:wrap; }
+.pill { padding:3px 10px; border-radius:20px; font-size:0.7rem; font-weight:600; border:1px solid; }
+.pill-g { background:#00ff8812; border-color:#00ff8840; color:var(--green); }
+.pill-b { background:#00aaff12; border-color:#00aaff40; color:var(--blue); }
+.pill-o { background:#ffaa0012; border-color:#ffaa0040; color:var(--orange); }
+.pill-r { background:#ff445512; border-color:#ff445540; color:var(--red); }
+
+.rack-grid { display:grid; grid-template-columns:repeat(12,1fr); gap:6px; }
+.rack {
+  aspect-ratio:0.7;
+  border-radius:8px;
+  border:1px solid;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:3px;
+  cursor:default;
+  transition:all 0.3s;
+  position:relative;
+  padding:6px 4px;
+}
+.rack-safe   { background:#001a0a; border-color:#00ff8830; }
+.rack-warm   { background:#1a1200; border-color:#ffaa0060; }
+.rack-hot    { background:#1a0500; border-color:#ff880060; animation:pulse-rack 1s infinite alternate; }
+.rack-crit   { background:#1a0000; border-color:#ff445580; animation:pulse-rack 0.5s infinite alternate; }
+.rack-dead   { background:#0a0a0a; border-color:#1a1a1a; opacity:0.4; }
+@keyframes pulse-rack {
+  from { box-shadow:0 0 4px currentColor; }
+  to   { box-shadow:0 0 16px currentColor, inset 0 0 8px currentColor; }
+}
+.rack-id   { font-size:0.55rem; color:var(--muted); }
+.rack-temp { font-size:0.9rem; font-weight:700; }
+.rack-util { font-size:0.6rem; }
+.rack-icon { font-size:0.8rem; }
+.temp-safe { color:var(--green); }
+.temp-warm { color:#aaff00; }
+.temp-hot  { color:var(--orange); }
+.temp-crit { color:var(--red); }
+
+.alert-banner {
+  display:none;
+  background:linear-gradient(135deg,#1a000088,#0a000088);
+  border:1px solid var(--red);
+  border-radius:10px;
+  padding:10px 16px;
+  color:var(--red);
+  font-size:0.85rem;
+  font-weight:600;
+  margin-bottom:12px;
+  animation:pulse-rack 0.8s infinite alternate;
+}
+
+/* ── POWER SOURCES ── */
+.power-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
+.power-card {
+  background:var(--surface2); border:2px solid var(--border);
+  border-radius:10px; padding:12px; text-align:center;
+  cursor:pointer; transition:all 0.2s;
+}
+.power-card:hover { border-color:var(--green); transform:scale(1.02); }
+.power-card.active {
+  border-color:var(--green); background:#00ff8808;
+  box-shadow:0 0 20px #00ff8820;
+}
+.power-icon { font-size:1.6rem; margin-bottom:4px; }
+.power-name { font-size:0.7rem; color:var(--muted); }
+.power-avail { font-size:0.8rem; font-weight:700; margin-top:2px; }
+.avail-good { color:var(--green); }
+.avail-mid  { color:var(--orange); }
+.avail-bad  { color:var(--red); }
+
+/* ── CARBON METER ── */
+.carbon-meter { margin-top:4px; }
+.carbon-track { background:var(--surface2); border-radius:6px; height:10px; overflow:hidden; position:relative; }
+.carbon-fill {
+  height:100%; border-radius:6px; transition:width 1s;
+  background:linear-gradient(90deg,var(--green),var(--orange),var(--red));
+}
+.carbon-labels { display:flex; justify-content:space-between; font-size:0.65rem; color:var(--muted); margin-top:4px; }
+
+/* ── METRICS ── */
+.metric-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.metric {
+  background:var(--surface2); border:1px solid var(--border);
+  border-radius:10px; padding:12px; text-align:center;
+}
+.metric-val { font-size:1.5rem; font-weight:700; line-height:1; }
+.metric-lbl { font-size:0.65rem; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-top:4px; }
+.val-good { color:var(--green); }
+.val-warn { color:var(--orange); }
+.val-bad  { color:var(--red); }
+.val-blue { color:var(--blue); }
+
+/* ── CHART ── */
+.chart-wrap { height:80px; display:flex; align-items:flex-end; gap:2px; overflow:hidden; }
+.cbar { flex:1; border-radius:2px 2px 0 0; min-width:3px; transition:height 0.3s; }
+
+/* ── GRADE ── */
+.grade-wrap { display:flex; align-items:center; gap:16px; }
+.grade-circle {
+  width:72px; height:72px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:2rem; font-weight:800; border:3px solid; flex-shrink:0;
+}
+.gA { color:var(--green);  border-color:var(--green);  background:#00ff8810; box-shadow:0 0 20px #00ff8830; }
+.gB { color:var(--blue);   border-color:var(--blue);   background:#00aaff10; }
+.gC { color:var(--orange); border-color:var(--orange); background:#ffaa0010; }
+.gD { color:#ff6600;       border-color:#ff6600;       background:#ff660010; }
+.gF { color:var(--red);    border-color:var(--red);    background:#ff445510; }
+.grade-details { flex:1; }
+.grade-pct { font-size:1.4rem; font-weight:700; }
+.grade-feedback { font-size:0.78rem; color:var(--muted); margin-top:3px; }
+.grade-bar { background:var(--surface2); border-radius:4px; height:5px; margin-top:8px; overflow:hidden; }
+.grade-fill { height:100%; border-radius:4px; transition:width 1.2s; background:linear-gradient(90deg,var(--green),var(--green2)); }
+.grade-stats { display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:8px; }
+.grade-stat { font-size:0.68rem; color:var(--muted); }
+.grade-stat span { color:var(--text); font-weight:600; }
+
+/* ── LOG ── */
+.log-wrap {
+  background:#020805; border:1px solid var(--border);
+  border-radius:10px; padding:12px; height:160px;
+  overflow-y:auto; font-family:'Courier New',monospace; font-size:0.73rem;
+}
+.log-wrap::-webkit-scrollbar { width:3px; }
+.log-wrap::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+.lg { padding:1px 0; }
+.lg-pos  { color:var(--green); }
+.lg-neg  { color:var(--red); }
+.lg-warn { color:var(--orange); }
+.lg-sys  { color:var(--blue); }
+.lg-info { color:#6a9a76; }
+
+/* ── EPISODE OVERLAY ── */
+.overlay {
+  display:none; position:fixed; inset:0;
+  background:#000000dd; z-index:200;
+  align-items:center; justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.overlay-card {
+  background:var(--surface); border:2px solid var(--green);
+  border-radius:20px; padding:40px; text-align:center;
+  max-width:440px; width:90%;
+  box-shadow:0 0 80px #00ff8820;
+  animation:slideUp 0.3s ease;
+}
+@keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+.overlay-card h2 { font-size:1.8rem; color:var(--green); margin-bottom:8px; }
+.overlay-card p  { color:var(--muted); margin-bottom:20px; font-size:0.9rem; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon">🌱</div>
+    <div>
+      <div class="header-title">Sustainable Data Center RL Environment</div>
+      <div class="header-sub">AI-Powered Green Computing · Meta × Scaler OpenEnv Hackathon 2026</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <div class="version">v1.0.0 LIVE</div>
+  </div>
+</div>
+
+<!-- EPISODE END OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-card">
+    <h2>🏁 Episode Complete!</h2>
+    <p id="overlayMsg">Your data center has run for 72 steps.</p>
+    <div id="overlayGrade" style="margin-bottom:20px"></div>
+    <button class="btn btn-start" onclick="hideOverlay()">▶ Run Again</button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- ── ROW 1: CONTROLS ── -->
+  <div class="card">
+    <div class="card-title">⚙️ Episode Configuration & Controls</div>
+    <div class="controls-grid">
+      <div class="ctrl-group">
+        <label>Difficulty</label>
+        <select id="selDiff">
+          <option value="easy">🟢 Easy</option>
+          <option value="medium" selected>🟡 Medium</option>
+          <option value="hard">🔴 Hard</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Cooling Level: <span id="coolingLbl" style="color:var(--green)">3</span></label>
+        <div class="slider-wrap">
+          <input type="range" id="slCooling" min="1" max="5" value="3"
+            oninput="document.getElementById('coolingLbl').textContent=this.value;updateSlider(this)">
+          <span class="slider-val" id="coolingVal">3</span>
+        </div>
+      </div>
+      <div class="ctrl-group">
+        <label>Workload Mode</label>
+        <select id="selWorkload">
+          <option value="eco_mode">🌱 Eco Mode (60% load)</option>
+          <option value="balanced" selected>⚖️ Balanced (100% load)</option>
+          <option value="high_performance">🚀 High Performance (140%)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Defer Non-Critical Tasks?</label>
+        <select id="selDefer">
+          <option value="false" selected>⚡ No — Process Immediately</option>
+          <option value="true">⏳ Yes — Defer to Off-Peak</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-start"  onclick="resetEpisode()">▶ Start Episode</button>
+      <button class="btn btn-auto"   onclick="autoPlay()">🤖 Auto-Play AI Agent</button>
+      <button class="btn btn-stop"   onclick="stopAuto()">⏹ Stop</button>
+      <button class="btn btn-step"   onclick="manualStep()">👆 Manual Step</button>
+    </div>
+  </div>
+
+  <!-- ── ROW 2: RACKS FULL WIDTH ── -->
+  <div class="card rack-section">
+    <div class="rack-header">
+      <div class="card-title" style="margin-bottom:0">🖥️ Server Rack Status — 12 Racks Live</div>
+      <div class="pills" id="pills">
+        <span class="pill pill-b">⏳ Not Started</span>
+      </div>
+    </div>
+    <div class="alert-banner" id="alertBanner">⚠️ CRITICAL ALERT</div>
+    <div class="rack-grid" id="rackGrid"></div>
+  </div>
+
+  <!-- ── ROW 3: POWER | METRICS | GRADE ── -->
+  <div class="row row-3">
+
+    <!-- Power -->
+    <div class="card">
+      <div class="card-title">⚡ Power Source Selection</div>
+      <div class="power-grid">
+        <div class="power-card" id="psrc-solar" onclick="setPower('solar')">
+          <div class="power-icon">☀️</div>
+          <div class="power-name">Solar</div>
+          <div class="power-avail avail-good" id="pav-solar">—</div>
+        </div>
+        <div class="power-card active" id="psrc-hybrid" onclick="setPower('hybrid')">
+          <div class="power-icon">🔋</div>
+          <div class="power-name">Hybrid</div>
+          <div class="power-avail avail-mid" id="pav-hybrid">—</div>
+        </div>
+        <div class="power-card" id="psrc-wind" onclick="setPower('wind')">
+          <div class="power-icon">💨</div>
+          <div class="power-name">Wind</div>
+          <div class="power-avail avail-good" id="pav-wind">—</div>
+        </div>
+        <div class="power-card" id="psrc-grid" onclick="setPower('grid')">
+          <div class="power-icon">🏭</div>
+          <div class="power-name">Grid</div>
+          <div class="power-avail avail-bad">High CO₂</div>
+        </div>
+      </div>
+      <div class="carbon-meter">
+        <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--muted);margin-bottom:4px">
+          <span>🌍 Carbon Emissions</span>
+          <span id="carbonKg" style="color:var(--green)">0 kg CO₂</span>
+        </div>
+        <div class="carbon-track">
+          <div class="carbon-fill" id="carbonFill" style="width:0%"></div>
+        </div>
+        <div class="carbon-labels"><span>0</span><span>175</span><span>350 kg</span></div>
+      </div>
+      <div style="margin-top:12px">
+        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px">REWARD HISTORY</div>
+        <div class="chart-wrap" id="chart"></div>
+      </div>
+    </div>
+
+    <!-- Metrics -->
+    <div class="card">
+      <div class="card-title">📊 Live Metrics</div>
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="metric-val val-good" id="mTemp">—</div>
+          <div class="metric-lbl">Avg Temp °C</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-blue" id="mPUE">—</div>
+          <div class="metric-lbl">PUE Score</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mRenew">—</div>
+          <div class="metric-lbl">% Renewable</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mTasks">0</div>
+          <div class="metric-lbl">Tasks Done</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mStep">0/72</div>
+          <div class="metric-lbl">Progress</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mReward">0</div>
+          <div class="metric-lbl">Total Reward</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mSLA">0</div>
+          <div class="metric-lbl">SLA Violations</div>
+        </div>
+        <div class="metric">
+          <div class="metric-val val-good" id="mFailed">0</div>
+          <div class="metric-lbl">Failed Racks</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grade -->
+    <div class="card">
+      <div class="card-title">🏆 Performance Grade</div>
+      <div id="gradeBox">
+        <div style="color:var(--muted);font-size:0.85rem;text-align:center;padding:20px 0">
+          Start an episode to see your grade
+        </div>
+      </div>
+      <br>
+      <div class="card-title" style="margin-bottom:8px">📋 Event Log</div>
+      <div class="log-wrap" id="log">
+        <div class="lg lg-sys">[System] Dashboard ready. Configure and start an episode.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const API = 'http://127.0.0.1:8000';
+let totalReward = 0;
+let rewardHistory = [];
+let autoInterval = null;
+let episodeStarted = false;
+let lastObs = null;
+let selectedPower = 'hybrid';
+
+// ── Init ──────────────────────────────────────────────────────
+function updateSlider(el) {
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.setProperty('--pct', pct + '%');
+  document.getElementById('coolingVal').textContent = el.value;
+}
+updateSlider(document.getElementById('slCooling'));
+
+// Init rack placeholders
+document.getElementById('rackGrid').innerHTML =
+  Array.from({length:12}, (_,i) => `
+    <div class="rack rack-safe">
+      <div class="rack-id">r${String(i).padStart(2,'0')}</div>
+      <div class="rack-temp temp-safe">—</div>
+      <div class="rack-icon">💤</div>
+      <div class="rack-util">idle</div>
+    </div>`).join('');
+
+// ── Power source ──────────────────────────────────────────────
+function setPower(src) {
+  selectedPower = src;
+  ['solar','wind','hybrid','grid'].forEach(s =>
+    document.getElementById(`psrc-${s}`).classList.toggle('active', s === src)
+  );
+}
+
+// ── API ───────────────────────────────────────────────────────
+async function resetEpisode() {
+  const diff = document.getElementById('selDiff').value;
+  try {
+    const res = await fetch(`${API}/reset`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({difficulty: diff})
+    });
+    const data = await res.json();
+    totalReward = 0; rewardHistory = []; episodeStarted = true;
+    lastObs = data.observation;
+    renderUI(data.observation, 0, false);
+    fetchGrade();
+    addLog(`▶ Episode started | Difficulty: ${diff} | Weather: ${data.observation.weather}`, 'sys');
+  } catch(e) {
+    addLog('❌ Cannot connect. Is the server running?', 'neg');
+  }
+}
+
+async function doStep(cooling, workload, power, defer) {
+  if (!episodeStarted) return;
+  try {
+    const res = await fetch(`${API}/step`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        cooling_level: cooling,
+        workload_distribution: workload,
+        power_source: power,
+        defer_non_critical: defer
+      })
+    });
+    const data = await res.json();
+    totalReward += data.reward;
+    rewardHistory.push(data.reward);
+    lastObs = data.observation;
+    renderUI(data.observation, data.reward, data.done);
+    fetchGrade();
+
+    const o = data.observation;
+    const cls = data.reward >= 0 ? 'pos' : 'neg';
+    addLog(
+      `Step ${o.step_number} | ${power.padEnd(6)} | cool=${cooling} | ` +
+      `${o.avg_temperature.toFixed(1)}°C | ` +
+      `PUE=${o.pue.toFixed(2)} | ` +
+      `carbon=${o.carbon_emissions_kg.toFixed(2)}kg | ` +
+      `reward=${data.reward > 0 ? '+' : ''}${data.reward.toFixed(1)}`,
+      cls
+    );
+    if (o.failed_racks > 0)
+      addLog(`🔥 ${o.failed_racks} rack(s) have FAILED!`, 'neg');
+    if (o.avg_temperature > 65)
+      addLog(`🌡️ WARNING: Avg temp ${o.avg_temperature.toFixed(1)}°C — increase cooling!`, 'warn');
+    if (o.sla_violations > 0)
+      addLog(`⚠️ SLA violation! Deferred tasks: ${o.deferred_tasks}`, 'warn');
+
+    if (data.done) {
+      episodeStarted = false;
+      stopAuto();
+      setTimeout(() => showOverlay(data.final_grade), 600);
+    }
+  } catch(e) { addLog('❌ Step error: ' + e.message, 'neg'); }
+}
+
+async function manualStep() {
+  if (!episodeStarted) { addLog('⚠️ Start an episode first!', 'warn'); return; }
+  const cooling  = parseInt(document.getElementById('slCooling').value);
+  const workload = document.getElementById('selWorkload').value;
+  const defer    = document.getElementById('selDefer').value === 'true';
+  await doStep(cooling, workload, selectedPower, defer);
+}
+
+async function autoPlay() {
+  if (!episodeStarted) await resetEpisode();
+  if (autoInterval) clearInterval(autoInterval);
+  autoInterval = setInterval(async () => {
+    if (!episodeStarted) { stopAuto(); return; }
+    const o = lastObs;
+    if (!o) return;
+
+    // Smart AI agent decisions
+    let cooling, workload, power, defer;
+
+    // Temperature management
+    if      (o.avg_temperature > 70) cooling = 5;
+    else if (o.avg_temperature > 55) cooling = 4;
+    else if (o.avg_temperature > 40) cooling = 3;
+    else if (o.avg_temperature < 28) cooling = 1;
+    else                             cooling = 2;
+
+    // Renewable-first power selection
+    if      (o.solar_availability > 0.6)  power = 'solar';
+    else if (o.wind_availability  > 0.6)  power = 'wind';
+    else if (o.solar_availability > 0.3 ||
+             o.wind_availability  > 0.3)  power = 'hybrid';
+    else                                  power = 'grid';
+
+    // Workload based on temperature
+    if      (o.avg_temperature > 65 || o.failed_racks > 1) workload = 'eco_mode';
+    else if (o.incoming_workload > 0.75 && o.avg_temperature < 45) workload = 'high_performance';
+    else    workload = 'balanced';
+
+    // Defer during afternoon peak
+    defer = o.time_of_day === 'afternoon' && o.incoming_workload > 0.7;
+
+    setPower(power);
+    document.getElementById('slCooling').value = cooling;
+    updateSlider(document.getElementById('slCooling'));
+
+    await doStep(cooling, workload, power, defer);
+  }, 650);
+}
+
+function stopAuto() {
+  if (autoInterval) { clearInterval(autoInterval); autoInterval = null; }
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderUI(o, reward, done) {
+  // Racks
+  const grid = document.getElementById('rackGrid');
+  grid.innerHTML = o.server_racks.map(r => {
+    if (r.is_failed) return `
+      <div class="rack rack-dead">
+        <div class="rack-id">${r.id.replace('rack_','r')}</div>
+        <div class="rack-temp">FAIL</div>
+        <div class="rack-icon">💀</div>
+        <div class="rack-util">—</div>
+      </div>`;
+
+    const t = r.temperature;
+    const cls  = t > 75 ? 'rack-crit' : t > 60 ? 'rack-hot' : t > 45 ? 'rack-warm' : 'rack-safe';
+    const tcls = t > 75 ? 'temp-crit' : t > 60 ? 'temp-hot'  : t > 45 ? 'temp-warm' : 'temp-safe';
+    const icon = r.is_overheated ? '🔥' : t > 45 ? '⚠️' : '✅';
+    const util = (r.utilization * 100).toFixed(0);
+    return `
+      <div class="rack ${cls}">
+        <div class="rack-id">${r.id.replace('rack_','r')}</div>
+        <div class="rack-temp ${tcls}">${t.toFixed(0)}°</div>
+        <div class="rack-icon">${icon}</div>
+        <div class="rack-util">${util}%</div>
+      </div>`;
+  }).join('');
+
+  // Status pills
+  const wi = {sunny:'☀️',cloudy:'☁️',windy:'💨',stormy:'⛈️'};
+  const ti = {morning:'🌅',afternoon:'☀️',evening:'🌆',night:'🌙'};
+  let pills = `
+    <span class="pill pill-b">${ti[o.time_of_day]||'⏰'} ${o.time_of_day}</span>
+    <span class="pill pill-g">${wi[o.weather]||'🌤'} ${o.weather}</span>
+    <span class="pill pill-o">🌡️ ${o.outside_temp.toFixed(0)}°C outside</span>
+    <span class="pill pill-g">💡 ${o.renewable_percentage.toFixed(0)}% renewable</span>`;
+  if (o.failed_racks > 0)   pills += `<span class="pill pill-r">💀 ${o.failed_racks} failed</span>`;
+  if (o.sla_violations > 0) pills += `<span class="pill pill-r">⚠️ ${o.sla_violations} SLA</span>`;
+  document.getElementById('pills').innerHTML = pills;
+
+  // Alert banner
+  const banner = document.getElementById('alertBanner');
+  if (o.failed_racks > 2 || o.avg_temperature > 78) {
+    banner.style.display = 'block';
+    banner.textContent = o.failed_racks > 2
+      ? `💀 CRITICAL: ${o.failed_racks} server racks have FAILED — switch to eco_mode immediately!`
+      : `🌡️ THERMAL ALERT: ${o.avg_temperature.toFixed(1)}°C avg — increase cooling to level 5!`;
+  } else { banner.style.display = 'none'; }
+
+  // Power availability
+  document.getElementById('pav-solar').textContent  = (o.solar_availability*100).toFixed(0) + '%';
+  document.getElementById('pav-wind').textContent   = (o.wind_availability*100).toFixed(0) + '%';
+  document.getElementById('pav-hybrid').textContent = ((o.solar_availability+o.wind_availability)*50).toFixed(0) + '%';
+  const solarEl = document.getElementById('pav-solar');
+  solarEl.className = 'power-avail ' + (o.solar_availability > 0.5 ? 'avail-good' : o.solar_availability > 0.2 ? 'avail-mid' : 'avail-bad');
+
+  // Carbon bar
+  const pct = Math.min(o.total_carbon_kg / 350 * 100, 100);
+  document.getElementById('carbonFill').style.width = pct + '%';
+  document.getElementById('carbonKg').textContent = o.total_carbon_kg.toFixed(1) + ' kg CO₂';
+
+  // Metrics
+  const setMetric = (id, val, good, warn) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = val;
+      el.className = 'metric-val ' + (
+        typeof good === 'function' ? good(parseFloat(val)) :
+        parseFloat(val) <= good ? 'val-good' :
+        parseFloat(val) <= warn ? 'val-warn' : 'val-bad'
+      );
+    }
+  };
+
+  setMetric('mTemp',   o.avg_temperature.toFixed(1), 45, 65);
+  setMetric('mPUE',    o.pue.toFixed(2), v => v < 1.4 ? 'val-blue' : v < 1.8 ? 'val-warn' : 'val-bad');
+  setMetric('mRenew',  o.renewable_percentage.toFixed(0) + '%', v => parseFloat(v) > 60 ? 'val-good' : parseFloat(v) > 30 ? 'val-warn' : 'val-bad');
+  setMetric('mTasks',  o.tasks_completed, Infinity, Infinity);
+  document.getElementById('mTasks').className = 'metric-val val-good';
+  document.getElementById('mStep').textContent = `${o.step_number}/72`;
+  document.getElementById('mStep').className = 'metric-val val-blue';
+  document.getElementById('mReward').textContent = totalReward.toFixed(1);
+  document.getElementById('mReward').className = 'metric-val ' + (totalReward >= 0 ? 'val-good' : 'val-bad');
+  setMetric('mSLA',    o.sla_violations, 0, 3);
+  document.getElementById('mSLA').className = 'metric-val ' + (o.sla_violations === 0 ? 'val-good' : o.sla_violations < 5 ? 'val-warn' : 'val-bad');
+  setMetric('mFailed', o.failed_racks, 0, 2);
+  document.getElementById('mFailed').className = 'metric-val ' + (o.failed_racks === 0 ? 'val-good' : o.failed_racks < 3 ? 'val-warn' : 'val-bad');
+
+  // Chart
+  const chart = document.getElementById('chart');
+  const last  = rewardHistory.slice(-60);
+  const maxR  = Math.max(...last.map(Math.abs), 1);
+  chart.innerHTML = last.map(r => {
+    const h = (Math.abs(r) / maxR * 100).toFixed(0);
+    return `<div class="cbar" style="height:${h}%;background:${r>=0?'var(--green)':'var(--red)'};opacity:0.85"></div>`;
+  }).join('');
+}
+
+async function fetchGrade() {
+  try {
+    const res = await fetch(`${API}/grade`);
+    const g = await res.json();
+    renderGrade(g, 'gradeBox');
+  } catch(e) {}
+}
+
+function renderGrade(g, id) {
+  if (!g || !g.grade) return;
+  const el = document.getElementById(id);
+  if (!el) return;
+  const scoreColor = g.score >= 0.7 ? 'var(--green)' : g.score >= 0.5 ? 'var(--orange)' : 'var(--red)';
+  const s = g.stats || {};
+  el.innerHTML = `
+    <div class="grade-wrap">
+      <div class="grade-circle g${g.grade}">${g.grade}</div>
+      <div class="grade-details">
+        <div class="grade-pct" style="color:${scoreColor}">${(g.score*100).toFixed(0)}%</div>
+        <div class="grade-feedback">${g.feedback}</div>
+        <div class="grade-bar"><div class="grade-fill" style="width:${g.score*100}%"></div></div>
+        <div class="grade-stats">
+          <div class="grade-stat">Carbon: <span>${s.total_carbon_kg ?? '—'}kg</span></div>
+          <div class="grade-stat">Tasks: <span>${s.tasks_completed ?? '—'}</span></div>
+          <div class="grade-stat">Reliability: <span>${s.reliability_score != null ? (s.reliability_score*100).toFixed(0)+'%' : '—'}</span></div>
+          <div class="grade-stat">Consistency: <span>${s.consistency_score != null ? (s.consistency_score*100).toFixed(0)+'%' : '—'}</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function showOverlay(gradeData) {
+  document.getElementById('overlay').style.display = 'flex';
+  if (gradeData) {
+    document.getElementById('overlayMsg').textContent = gradeData.feedback || 'Episode complete!';
+    renderGrade(gradeData, 'overlayGrade');
+  }
+}
+function hideOverlay() {
+  document.getElementById('overlay').style.display = 'none';
+  resetEpisode();
+}
+
+function addLog(msg, type='info') {
+  const box = document.getElementById('log');
+  const d = document.createElement('div');
+  d.className = `lg lg-${type}`;
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  box.appendChild(d);
+  box.scrollTop = box.scrollHeight;
+  // Keep max 100 lines
+  while (box.children.length > 100) box.removeChild(box.firstChild);
+}
+</script>
+</body>
+</html>
