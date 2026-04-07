@@ -1,25 +1,40 @@
 """
-OpenEnv Client for the Sustainable Data Center RL Environment.
+OpenEnv WebSocket Client for Sustainable Data Center RL Environment.
 
 Usage:
     import asyncio
     from client import DataCenterEnv
+    from models import DataCenterAction
 
     async def main():
-        async with DataCenterEnv(base_url="https://abhinavtiwary-datacenter-env.hf.space") as env:
-            obs = await env.reset(difficulty="hard")
+        async with DataCenterEnv(
+            base_url="https://huggingface.co/spaces/abhinavtiwary/datacenter-env"
+        ) as env:
+            obs = await env.reset(difficulty="medium", seed=42)
             while not obs.observation.done:
-                # Smart agent: prioritize renewables and temperature control
                 o = obs.observation
-                cooling = 5 if o.avg_temperature > 60 else 3
-                power = "solar" if o.solar_availability > 0.5 else "wind" if o.wind_availability > 0.5 else "hybrid"
-                obs = await env.step(DataCenterAction(
-                    cooling_level=cooling,
-                    workload_distribution="balanced",
-                    power_source=power,
-                    defer_non_critical=o.time_of_day == "afternoon"
-                ))
-                print(f"Step {o.step_number} | Temp: {o.avg_temperature}°C | Carbon: {o.total_carbon_kg}kg")
+                # Smart agent
+                if o.avg_temperature > 60:
+                    action = DataCenterAction(
+                        cooling_level=5,
+                        workload_distribution="eco_mode",
+                        power_source="hybrid",
+                        defer_non_critical=True
+                    )
+                else:
+                    power = "solar" if o.solar_availability > 0.5 else \
+                            "wind"  if o.wind_availability  > 0.5 else "hybrid"
+                    action = DataCenterAction(
+                        cooling_level=3,
+                        workload_distribution="balanced",
+                        power_source=power,
+                        defer_non_critical=(o.time_of_day == "afternoon")
+                    )
+                obs = await env.step(action)
+                print(f"Step {o.step_number} | "
+                      f"Temp: {o.avg_temperature}°C | "
+                      f"Carbon: {o.total_carbon_kg:.1f}kg | "
+                      f"Reward: {obs.reward:.2f}")
 
     asyncio.run(main())
 """
@@ -34,10 +49,10 @@ class DataCenterEnv(EnvClient[DataCenterAction, DataCenterObservation, DataCente
 
     def _step_payload(self, action: DataCenterAction) -> dict:
         return {
-            "cooling_level":        action.cooling_level,
+            "cooling_level":         action.cooling_level,
             "workload_distribution": action.workload_distribution,
-            "power_source":         action.power_source,
-            "defer_non_critical":   action.defer_non_critical,
+            "power_source":          action.power_source,
+            "defer_non_critical":    action.defer_non_critical,
         }
 
     def _parse_result(self, payload: dict) -> StepResult[DataCenterObservation]:

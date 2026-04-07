@@ -160,8 +160,12 @@ def get_action(client, step, obs, last_reward, history):
         return smart_fallback(obs)
 
 
+SEED = int(os.getenv("EVAL_SEED", "42"))
+
 def env_reset():
-    r = requests.post(f"{ENV_URL}/reset", json={"difficulty": DIFFICULTY}, timeout=30)
+    r = requests.post(f"{ENV_URL}/reset",
+        json={"difficulty": DIFFICULTY, "seed": SEED},
+        timeout=30)
     r.raise_for_status()
     return r.json()
 
@@ -185,7 +189,12 @@ async def main():
     log_start(TASK_NAME, BENCHMARK, MODEL_NAME)
 
     try:
-        data = env_reset()
+        def env_reset():
+            r = requests.post(f"{ENV_URL}/reset",
+                json={"difficulty": DIFFICULTY, "seed": 42},  # fixed seed!
+                timeout=30)
+            r.raise_for_status()
+            return r.json()
         obs = data.get("observation", {})
         done = False
 

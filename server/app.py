@@ -84,6 +84,9 @@ app.openapi = custom_openapi
 
 class ResetRequest(BaseModel):
     difficulty: Optional[str] = "medium"
+    seed: Optional[int] = None
+    time_of_day: Optional[str] = None
+    weather: Optional[str] = None
 
 
 class StepRequest(BaseModel):
@@ -144,7 +147,12 @@ def root():
 def reset(request: ResetRequest = None):
     if request is None:
         request = ResetRequest()
-    obs = env.reset(difficulty=request.difficulty or "medium")
+    obs = env.reset(
+        difficulty=request.difficulty or "medium",
+        seed=request.seed,
+        time_of_day=request.time_of_day,
+        weather=request.weather
+    )
     return {
         "observation": obs_to_dict(obs),
         "message": f"Data center episode started | Difficulty: {request.difficulty}"

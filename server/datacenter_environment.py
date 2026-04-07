@@ -322,6 +322,11 @@ class DataCenterEnvironment(Environment):
                 "avg_temp":          avg_temp,
             }
         )
+    def reset(self, difficulty: str = "medium", seed: int = None, **kwargs) -> DataCenterObservation:
+        if seed is not None:
+            random.seed(seed)
+            import numpy as np
+            np.random.seed(seed)
 
     def _update_weather(self, settings):
         """Realistic weather transitions."""

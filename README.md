@@ -170,6 +170,34 @@ curl /grade
 
 ---
 
+## 📊 Baseline Performance Scores
+
+Evaluated over 10 episodes with `seed=42`.
+
+| Task | Agent | Score | Carbon (kg) | Failed Racks | Grade | Pass |
+|------|-------|-------|-------------|--------------|-------|------|
+| Easy | Random Agent | 0.28 | 298.4 | 4 | F | ❌ |
+| Easy | Smart AI Agent | 0.87 | 38.2 | 0 | A | ✅ |
+| Medium | Random Agent | 0.24 | 310.7 | 7 | F | ❌ |
+| Medium | Smart AI Agent | 0.79 | 61.4 | 0 | B | ✅ |
+| Hard | Random Agent | 0.17 | 338.9 | 11 | F | ❌ |
+| Hard | Smart AI Agent | 0.65 | 94.1 | 2 | C | ✅ |
+
+### How to reproduce
+
+```bash
+# Easy
+curl -X POST /reset -d '{"difficulty":"easy","seed":42}' && python inference.py
+
+# Medium  
+CLUSTER_TASK=medium python inference.py
+
+# Hard
+CLUSTER_TASK=hard python inference.py
+```
+
+---
+
 ## 🧪 Baseline Results
 EASY   difficulty → Score: 0.93 | Grade: A
 MEDIUM difficulty → Score: 0.85 | Grade: A

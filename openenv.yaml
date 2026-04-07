@@ -7,16 +7,47 @@ port: 7860
 
 metadata:
   title: "Sustainable Data Center RL Environment"
-  description: "AI agent optimizes data center efficiency while minimizing carbon emissions"
-  version: "1.0.0"
+  description: "AI agent minimizes carbon emissions while managing server cooling, renewable energy, and workload scheduling"
+  version: "2.0.0"
+  author: "abhinavtiwary"
+  license: "mit"
   tags:
     - reinforcement-learning
     - sustainability
     - data-center
     - green-computing
     - openenv
+    - infrastructure-ai
 
 environment:
   action_type: DataCenterAction
   observation_type: DataCenterObservation
   state_type: DataCenterState
+  episode_length: 72
+  action_space: "Discrete(4x3x4x2) — cooling_level, workload, power_source, defer"
+  observation_space: "Dict — server racks, energy metrics, weather, workload"
+
+tasks:
+  - name: easy
+    description: "Low workload variance, rare failures, clear weather"
+    pass_criterion: "score >= 0.7"
+    difficulty: easy
+
+  - name: medium
+    description: "Moderate variance, occasional storms, balanced workload"
+    pass_criterion: "score >= 0.6"
+    difficulty: medium
+
+  - name: hard
+    description: "High variance, frequent storms, heavy workload, fog"
+    pass_criterion: "score >= 0.5"
+    difficulty: hard
+
+rewards:
+  car_cleared: 1.0
+  ambulance_cleared: 4.0
+  fire_truck_cleared: 5.0
+  emergency_blocked: -2.5
+  critical_congestion: -1.5
+  episode_bonus: 30.0
+  score_range: "[0.0, 1.0]"
