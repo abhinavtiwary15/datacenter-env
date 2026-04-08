@@ -8,5 +8,3 @@ version = "1.0.0"
 description = "Sustainable Data Center RL Environment for OpenEnv"
 requires-python = ">=3.9"
 dependencies = ["fastapi", "uvicorn", "pydantic", "openenv-core"]
-[project.scripts]
-server = "server.app:main"
