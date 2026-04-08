@@ -4,7 +4,15 @@ build-backend = "setuptools.backends.legacy:build"
 
 [project]
 name = "datacenter-env"
-version = "1.0.0"
+version = "2.0.0"
 description = "Sustainable Data Center RL Environment for OpenEnv"
 requires-python = ">=3.9"
-dependencies = ["fastapi", "uvicorn", "pydantic", "openenv-core"]
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "openenv-core"
+]
+
+[project.scripts]
+server = "server.app:main"
