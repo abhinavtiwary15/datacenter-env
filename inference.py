@@ -195,6 +195,7 @@ async def main():
                 timeout=30)
             r.raise_for_status()
             return r.json()
+        data = env_reset()
         obs = data.get("observation", {})
         done = False
 

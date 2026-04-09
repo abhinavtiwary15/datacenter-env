@@ -63,7 +63,15 @@ class DataCenterEnvironment(Environment):
         self._wind_avail  = 0.5
         self._overheat_streak = {}  # rack_id -> consecutive overheat steps
 
-    def reset(self, difficulty: str = "medium", **kwargs) -> DataCenterObservation:
+    def reset(self, difficulty: str = "medium", seed: int = None, **kwargs) -> DataCenterObservation:
+        if seed is not None:
+            random.seed(seed)
+            try:
+                import numpy as np
+                np.random.seed(seed)
+            except ImportError:
+                pass
+        
         diff = difficulty if difficulty in self.DIFFICULTY_SETTINGS else "medium"
 
         self._state = DataCenterState(
@@ -322,11 +330,7 @@ class DataCenterEnvironment(Environment):
                 "avg_temp":          avg_temp,
             }
         )
-    def reset(self, difficulty: str = "medium", seed: int = None, **kwargs) -> DataCenterObservation:
-        if seed is not None:
-            random.seed(seed)
-            import numpy as np
-            np.random.seed(seed)
+
 
     def _update_weather(self, settings):
         """Realistic weather transitions."""
