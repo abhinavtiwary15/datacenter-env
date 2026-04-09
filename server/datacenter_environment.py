@@ -467,3 +467,15 @@ def grade(state: DataCenterState, difficulty: str = "medium") -> dict:
             "consistency_score": round(consistency, 2),
         }
     }
+
+def grade_easy(state: DataCenterState) -> dict:
+    """Grader for the easy task"""
+    return grade(state, difficulty="easy")
+
+def grade_medium(state: DataCenterState) -> dict:
+    """Grader for the medium task"""
+    return grade(state, difficulty="medium")
+
+def grade_hard(state: DataCenterState) -> dict:
+    """Grader for the hard task"""
+    return grade(state, difficulty="hard")

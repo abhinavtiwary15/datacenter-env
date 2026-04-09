@@ -28,26 +28,33 @@ environment:
   observation_space: "Dict — server racks, energy metrics, weather, workload"
 
 tasks:
-  - name: easy
+  - id: easy_task
+    name: easy
     description: "Low workload variance, rare failures, clear weather"
     pass_criterion: "score >= 0.7"
     difficulty: easy
+    grader: "server.datacenter_environment:grade_easy"
 
-  - name: medium
+  - id: medium_task
+    name: medium
     description: "Moderate variance, occasional storms, balanced workload"
     pass_criterion: "score >= 0.6"
     difficulty: medium
+    grader: "server.datacenter_environment:grade_medium"
 
-  - name: hard
+  - id: hard_task
+    name: hard
     description: "High variance, frequent storms, heavy workload, fog"
     pass_criterion: "score >= 0.5"
     difficulty: hard
+    grader: "server.datacenter_environment:grade_hard"
 
 rewards:
-  car_cleared: 1.0
-  ambulance_cleared: 4.0
-  fire_truck_cleared: 5.0
-  emergency_blocked: -2.5
-  critical_congestion: -1.5
+  temperature_safe: 2.0
+  renewable_good: 3.0
+  pue_good: 2.0
+  task_throughput: 0.03
+  rack_failure: -8.0
+  temperature_critical: -3.0
   episode_bonus: 30.0
-  score_range: "[0.0, 1.0]"
+  score_range: "[-100.0, 150.0]"
